@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   ShoppingCart,
-  Filter,
-  LayoutGrid,
   Search,
   Minus,
   Plus,
@@ -12,16 +10,17 @@ import {
   ClipboardCopy,
   Download,
   CheckCircle2,
+  LayoutGrid,
 } from "lucide-react";
 import { useStore, selectors, ShoppingRow, Location } from "../../state/store";
 
 /* ====== Heurística simple de pasillos (aisles) ====== */
 function inferAisle(name: string): string {
   const n = (name || "").toLowerCase();
-  if (/(tomato|lettuce|pepper|onion|garlic|apple|banana|spinach|carrot)/.test(n)) return "Produce";
-  if (/(milk|yogurt|cheese|butter)/.test(n)) return "Dairy";
-  if (/(chicken|beef|pork|ham|turkey)/.test(n)) return "Meat";
-  if (/(bread|bakery|rolls|baguette)/.test(n)) return "Bakery";
+  if (/(tomato|lettuce|pepper|onion|garlic|apple|banana|spinach|carrot|cucumber)/.test(n)) return "Produce";
+  if (/(milk|yogurt|cheese|butter|cream)/.test(n)) return "Dairy";
+  if (/(chicken|beef|pork|ham|turkey|sausage)/.test(n)) return "Meat";
+  if (/(bread|bakery|rolls|baguette|buns)/.test(n)) return "Bakery";
   if (/(rice|pasta|flour|oats|sugar|salt|cereal|beans|lentil)/.test(n)) return "Dry Goods";
   if (/(oil|olive|vinegar|sauce|ketchup|mustard|mayo|spice)/.test(n)) return "Condiments";
   if (/(frozen|ice cream|peas|pizza)/.test(n)) return "Frozen";
@@ -49,6 +48,7 @@ export default function ShoppingView() {
   const [filter, setFilter] = useState<"all" | "todo" | "purchased">("all");
   const [supermarketMode, setSupermarketMode] = useState(true);
 
+  /* ============== derived ============== */
   const filtered = useMemo(() => {
     let arr = shopping;
     if (filter === "todo") arr = arr.filter((r) => !r.purchased);
@@ -74,23 +74,17 @@ export default function ShoppingView() {
   const purchasedCount = shopping.filter((r) => r.purchased).length;
   const zerosCount = shopping.filter((r) => r.qty === 0).length;
 
-  /* ====== acciones ====== */
+  /* ============== actions ============== */
   const addQuick = (name: string, qty = 1, unit = "units", location: Location = "Pantry") => {
     if (!name.trim() || qty <= 0) return;
     addRow({ name: name.trim(), qty, unit, location, purchased: false });
   };
 
-  const markAll = (val: boolean) => {
-    const next = shopping.map((r) => ({ ...r, purchased: val }));
-    setShopping(next);
-  };
-
-  const clearZeros = () => {
-    setShopping(shopping.filter((r) => r.qty !== 0));
-  };
+  const markAll = (val: boolean) => setShopping(shopping.map((r) => ({ ...r, purchased: val })));
+  const clearZeros = () => setShopping(shopping.filter((r) => r.qty !== 0));
 
   const exportText = () => {
-    const byGroup = groups
+    const txt = groups
       .map(([k, arr]) => {
         const lines = arr.map(
           (r) => `- [${r.purchased ? "x" : " "}] ${r.qty} ${r.unit} ${r.name} (${r.location})`
@@ -98,8 +92,7 @@ export default function ShoppingView() {
         return `## ${k}\n${lines.join("\n")}`;
       })
       .join("\n\n");
-    const content = `Shopping List — ${new Date().toLocaleString()}\n\n${byGroup}\n`;
-    navigator.clipboard?.writeText(content);
+    navigator.clipboard?.writeText(`Shopping List — ${new Date().toLocaleString()}\n\n${txt}\n`);
     alert("Copied to clipboard!");
   };
 
@@ -117,32 +110,39 @@ export default function ShoppingView() {
   };
 
   return (
-    <section className="sp-card p-4 sp-card-lg">
-      <div className="flex items-center gap-2 mb-3">
-        <ShoppingCart className="w-5 h-5" style={{ color: "var(--brand)" }} />
-        <h2 className="text-lg font-extrabold">Shopping</h2>
-        <div className="flex-1" />
+    <section className="card-pro hero span-2">
+      {/* HEADER */}
+      <div className="card-head">
+        <div className="card-title">
+          <span className="ringed"><ShoppingCart className="w-4 h-4" /></span>
+          <div>
+            <h3>Shopping</h3>
+            <p className="eyebrow">Plan your groceries and sync to inventory</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
+      {/* TOOLBAR SUPERIOR */}
+      <div className="toolbar">
+        <div className="tool search">
+          <Search className="tool-icon" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="search-input w-[220px]"
+            className="search-input"
             placeholder="Search item…"
+            aria-label="Search in list"
           />
         </div>
 
-        {/* Filter */}
-        <div className="inline-flex items-center gap-1">
+        <div className="tool seg-group" role="tablist" aria-label="Filter">
           {(["all", "todo", "purchased"] as const).map((f) => (
             <button
               key={f}
+              role="tab"
+              aria-checked={filter === f}
               onClick={() => setFilter(f)}
-              className={`px-2 py-1 rounded-full text-xs font-semibold border ${
-                filter === f ? "sp-btn-primary" : "sp-btn-ghost"
-              }`}
+              className="seg"
               title={`Filter: ${f}`}
             >
               {f}
@@ -150,25 +150,23 @@ export default function ShoppingView() {
           ))}
         </div>
 
-        {/* Group */}
-        <div className="inline-flex items-center gap-2">
-          <LayoutGrid className="w-4 h-4 text-muted" />
-          <div className="tabs">
-            {(["location", "aisle"] as const).map((g) => (
-              <button
-                key={g}
-                className="tab"
-                aria-current={groupBy === g ? "page" : undefined}
-                onClick={() => setGroupBy(g)}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
+        <div className="tool seg-group" role="tablist" aria-label="Group by">
+          <LayoutGrid className="tool-icon" />
+          {(["location", "aisle"] as const).map((g) => (
+            <button
+              key={g}
+              role="tab"
+              aria-checked={groupBy === g}
+              onClick={() => setGroupBy(g)}
+              className="seg"
+              title={`Group by ${g}`}
+            >
+              {g}
+            </button>
+          ))}
         </div>
 
-        {/* Mode */}
-        <label className="text-xs inline-flex items-center gap-2 surface-2 px-2 py-1 rounded-md border-subtle ml-2">
+        <label className="tool checkbox">
           <input
             type="checkbox"
             checked={supermarketMode}
@@ -178,19 +176,19 @@ export default function ShoppingView() {
         </label>
       </div>
 
-      {/* Quick Add */}
+      {/* QUICK ADD – STICKY */}
       <QuickAdd onAdd={addQuick} />
 
-      {/* Groups */}
-      <div className="space-y-4 mt-3">
+      {/* GROUPS */}
+      <div className="space-y-4">
         {groups.map(([key, arr]) => {
           const totalQty = arr.reduce((s, r) => s + r.qty, 0);
           return (
-            <div key={key} className="rounded-2xl border-subtle surface">
-              <div className="px-3 py-2 flex items-center justify-between">
-                <div className="font-semibold">{key}</div>
-                <div className="text-xs text-muted">
-                  Items: {arr.length} · Qty: {totalQty}
+            <div key={key} className="group-card">
+              <div className="group-head">
+                <div className="gh-title">{key}</div>
+                <div className="gh-meta">
+                  Items: <b>{arr.length}</b> · Qty: <b>{totalQty}</b>
                 </div>
               </div>
               <ul className="divide-y border-subtle/50">
@@ -212,15 +210,13 @@ export default function ShoppingView() {
         })}
 
         {filtered.length === 0 && (
-          <div className="text-center text-sm text-muted py-8">
-            <p className="font-semibold">No items match your filters.</p>
-          </div>
+          <EmptyState />
         )}
       </div>
 
-      {/* Bulk bar */}
-      <div className="mt-4 grid md:grid-cols-2 gap-3">
-        <div className="rounded-2xl border-subtle surface p-3 flex flex-wrap items-center gap-2">
+      {/* BULK DOCK (sticky bottom-right) */}
+      <div className="bulk-dock">
+        <div className="dock-left">
           <button className="sp-btn sp-btn-ghost" onClick={() => markAll(true)}>
             <CheckSquare className="w-4 h-4" /> Mark all purchased
           </button>
@@ -244,10 +240,8 @@ export default function ShoppingView() {
           </button>
         </div>
 
-        <div className="rounded-2xl border-subtle surface p-3 flex items-center justify-between gap-2">
-          <div className="text-sm">
-            Purchased: <b>{purchasedCount}</b>
-          </div>
+        <div className="dock-right">
+          <span className="eyebrow">Purchased: <b>{purchasedCount}</b></span>
           <button
             onClick={() => finalizePurchase()}
             className="sp-btn sp-btn-primary"
@@ -282,42 +276,39 @@ function Row({
   onRemove: () => void;
 }) {
   return (
-    <li className="p-3 flex items-center justify-between">
-      <div className="flex items-center gap-3 min-w-0">
-        {/* Big checkbox in supermarket mode */}
-        <button
-          onClick={onToggle}
-          className="btn-icon"
-          title="Purchased"
-          aria-label="Purchased"
-          style={supermarket ? { width: 44, height: 44 } : undefined}
-        >
-          {it.purchased ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+    <li className="row-pro">
+      {/* Big checkbox in supermarket mode */}
+      <button
+        onClick={onToggle}
+        className={`btn-icon ${supermarket ? "check-lg" : ""}`}
+        title="Purchased"
+        aria-label="Purchased"
+      >
+        {it.purchased ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+      </button>
+
+      <div className="qty-stepper">
+        <button onClick={onDec} className="btn-icon" aria-label="Decrease">
+          <Minus className="w-4 h-4" />
         </button>
-
-        <div className="flex items-center gap-2">
-          <button onClick={onDec} className="btn-icon">
-            <Minus className="w-4 h-4" />
-          </button>
-          <span className="min-w-[48px] text-center font-semibold">{it.qty}</span>
-          <button onClick={onInc} className="btn-icon">
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="min-w-0">
-          <p className={`font-semibold truncate ${it.purchased ? "line-through opacity-70" : ""}`}>
-            {it.name} <span className="text-muted font-normal">({it.unit})</span>
-          </p>
-          <p className="text-xs text-muted">{it.location}</p>
-        </div>
+        <span className="qty">{it.qty}</span>
+        <button onClick={onInc} className="btn-icon" aria-label="Increase">
+          <Plus className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="info">
+        <div className={`title ${it.purchased ? "purchased" : ""}`}>
+          {it.name} <span className="muted">({it.unit})</span>
+        </div>
+        <div className="meta">{it.location}</div>
+      </div>
+
+      <div className="actions">
         <select
           value={it.location}
           onChange={(e) => onLoc(e.target.value as Location)}
-          className="select px-2 py-1 text-xs"
+          className="select"
           title="Move to"
         >
           {LOCS.map((l) => (
@@ -354,12 +345,13 @@ function QuickAdd({
   };
 
   return (
-    <form onSubmit={submit} className="grid md:grid-cols-[1fr,100px,120px,140px,120px] gap-2">
+    <form onSubmit={submit} className="sticky-add">
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Add item (e.g. Tomatoes)"
         className="input"
+        aria-label="Item name"
       />
       <input
         type="number"
@@ -367,20 +359,33 @@ function QuickAdd({
         value={qty}
         onChange={(e) => setQty(parseInt(e.target.value || "1"))}
         className="input"
+        aria-label="Quantity"
       />
-      <select value={unit} onChange={(e) => setUnit(e.target.value)} className="select">
+      <select value={unit} onChange={(e) => setUnit(e.target.value)} className="select" aria-label="Unit">
         {UNITS.map((u) => (
           <option key={u}>{u}</option>
         ))}
       </select>
-      <select value={loc} onChange={(e) => setLoc(e.target.value as Location)} className="select">
+      <select value={loc} onChange={(e) => setLoc(e.target.value as Location)} className="select" aria-label="Location">
         {LOCS.map((l) => (
           <option key={l}>{l}</option>
         ))}
       </select>
-      <button type="submit" className="sp-btn sp-btn-primary">
+      <button type="submit" className="sp-btn sp-btn-primary" aria-label="Add item">
         Add
       </button>
     </form>
+  );
+}
+
+/* ====== Empty state ====== */
+function EmptyState() {
+  return (
+    <div className="empty">
+      <div className="empty-card">
+        <div className="empty-title">No items match your filters</div>
+        <p className="eyebrow">Try clearing search or add something above.</p>
+      </div>
+    </div>
   );
 }
