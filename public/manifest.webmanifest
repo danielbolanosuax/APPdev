@@ -1,15 +1,68 @@
 {
-  "name": "SmartPantry AI",
+  "lang": "es-ES",
+  "name": "SmartPantry AI — Cocina más, desperdicia menos",
   "short_name": "SmartPantry",
-  "description": "Your smart kitchen companion.",
-  "start_url": "/",
+  "description": "Gestión inteligente de despensa, recetas y compras. Funciona offline y es instalable.",
+  "id": "app.smartpantry.ai",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#0b0f14",
+  "dir": "ltr",
+  "background_color": "#0b1217",
   "theme_color": "#16a34a",
+  "categories": ["food", "shopping", "lifestyle", "productivity", "utilities"],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Abrir Inventario",
+      "short_name": "Inventario",
+      "description": "Revisa tu despensa",
+      "url": "/?tab=inventory",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Lista de la compra",
+      "short_name": "Compra",
+      "description": "Gestiona tu lista rápidamente",
+      "url": "/?tab=shopping",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Recetas recomendadas",
+      "short_name": "Recetas",
+      "description": "Qué puedes cocinar hoy",
+      "url": "/?tab=recipes",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-dark-1x.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/home-desktop-1x.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "prefer_related_applications": false
 }

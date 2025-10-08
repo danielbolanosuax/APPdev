@@ -15,10 +15,10 @@ import {
   HeartOff,
   Search,
 } from "lucide-react";
-
+import { motion, AnimatePresence } from "framer-motion";
 import { useStore, selectors, normalize } from "./state/store";
 
-/** ===================== Tipos locales para UI ===================== */
+/** ===================== Tipos para UI ===================== */
 type Recipe = {
   name: string;
   ingredients: string;
@@ -31,7 +31,7 @@ type Recipe = {
   allergens?: string[];
 };
 
-/** ===================== TOASTS ===================== */
+/** ===================== Toasts ===================== */
 function useToasts() {
   const [toasts, setToasts] = useState<{ id: number; msg: string }[]>([]);
   const add = (msg: string) => {
@@ -40,69 +40,60 @@ function useToasts() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200);
   };
   const View = () => (
-    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 space-y-2">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          className="px-3 py-2 rounded-lg bg-black/80 text-white text-sm shadow-lg"
-          role="status"
-        >
-          {t.msg}
-        </div>
-      ))}
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 space-y-2">
+      <AnimatePresence>
+        {toasts.map((t) => (
+          <motion.div
+            key={t.id}
+            initial={{ opacity: 0, y: 16, scale: .98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="px-4 py-2 rounded-xl surface border-subtle text-sm shadow-elev"
+            role="status"
+          >
+            {t.msg}
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
   return { add, View };
 }
 
-/** ===================== COMPONENT ===================== */
+/** ===================== App ===================== */
 export default function App() {
   const toast = useToasts();
   const Toasts = toast.View;
 
-  // ======= STORE (Zustand) =======
+  // ======= STORE =======
   const items = useStore(selectors.items);
   const shoppingList = useStore(selectors.shopping);
-  const history = useStore(selectors.history);
   const prefs = useStore(selectors.prefs);
 
   const setItems = useStore((s) => s.setItems);
-  const addItem = useStore((s) => s.addItem);
-  const updateItem = useStore((s) => s.updateItem);
-  const removeItem = useStore((s) => s.removeItem);
-
   const addRow = useStore((s) => s.addRow);
   const updateQtyRow = useStore((s) => s.updateQty);
   const togglePurchasedRow = useStore((s) => s.togglePurchased);
   const changeLocRow = useStore((s) => s.changeLoc);
   const removeRow = useStore((s) => s.removeRow);
   const finalizePurchase = useStore((s) => s.finalizePurchase);
-
   const addCook = useStore((s) => s.addCook);
-
   const setTheme = useStore((s) => s.setTheme);
-  const setFilter = useStore((s) => s.setFilter);
   const setSort = useStore((s) => s.setSort);
   const toggleFavorite = useStore((s) => s.toggleFavorite);
   const setGoals = useStore((s) => s.setGoals);
   const favorites = useStore((s) => new Set(s.prefs.favorites));
 
-  // ======= UI Tabs y búsqueda global =======
-  const [activeTab, setActiveTab] = useState<
-    "inventory" | "recipes" | "shopping" | "analytics" | "settings"
-  >("inventory");
+  // ======= Tabs + búsqueda global =======
+  const [activeTab, setActiveTab] = useState<"inventory" | "recipes" | "shopping" | "analytics" | "settings">("inventory");
   const searchRef = useRef<HTMLInputElement>(null);
   const [globalSearch, setGlobalSearch] = useState("");
   const [recipeQuery, setRecipeQuery] = useState("");
 
   useEffect(() => {
     const q = normalize(globalSearch);
-    if (activeTab === "inventory") {
-      setQuery(q);
-    }
-    if (activeTab === "recipes") {
-      setRecipeQuery(q);
-    }
+    if (activeTab === "inventory") setQuery(q);
+    if (activeTab === "recipes") setRecipeQuery(q);
   }, [globalSearch, activeTab]);
 
   // ======= INVENTORY =======
@@ -133,7 +124,7 @@ export default function App() {
     return arr;
   }, [items, prefs.filter, query, prefs.sort]);
 
-  // ======= RECIPES (scoring con inventario + favoritos) =======
+  // ======= RECIPES =======
   const baseRecipes: Recipe[] = [
     {
       name: "Tomato Pasta",
@@ -143,8 +134,7 @@ export default function App() {
       rating: 4.5,
       tags: ["Vegetarian", "Quick"],
       uses: { Tomatoes: 2, Pasta: 1, "Olive Oil": 15 },
-      steps: ["Cuece la pasta.", "Saltea tomate.", "Mezcla y sirve."],
-      allergens: [],
+      steps: ["Cuece la pasta.", "Saltea tomate.", "Mezcla y sirve."]
     },
     {
       name: "Chicken & Rice Bowl",
@@ -154,8 +144,7 @@ export default function App() {
       rating: 4.8,
       tags: ["High Protein"],
       uses: { Chicken: 250, Rice: 0.25, "Olive Oil": 10 },
-      steps: ["Dora el pollo.", "Cuece el arroz.", "Monta el plato."],
-      allergens: [],
+      steps: ["Dora el pollo.", "Cuece el arroz.", "Monta el plato."]
     },
     {
       name: "Milk Pudding",
@@ -165,9 +154,8 @@ export default function App() {
       rating: 4.2,
       tags: ["Dessert"],
       uses: { Milk: 0.3, Rice: 0.1, Sugar: 25 },
-      steps: ["Cocina arroz en leche.", "Endulza.", "Enfría."],
-      allergens: ["Dairy"],
-    },
+      steps: ["Cocina arroz en leche.", "Endulza.", "Enfría."]
+    }
   ];
 
   const invMap = useMemo(() => {
@@ -183,6 +171,7 @@ export default function App() {
 
   const [onlyCookable, setOnlyCookable] = useState(false);
 
+  const favoritesSet = favorites;
   const scoredRecipes = useMemo(() => {
     const q = normalize(recipeQuery);
     let arr = baseRecipes.map((r) => {
@@ -192,7 +181,7 @@ export default function App() {
       ).length;
       const scoreBase = (haveCount / Math.max(1, req.length)) * 100;
       const timeBoost = parseMins(r.time) <= 20 ? 8 : 0;
-      const favBoost = favorites.has(r.name) ? 10 : 0;
+      const favBoost = favoritesSet.has(r.name) ? 10 : 0;
       return {
         r,
         haveCount,
@@ -211,7 +200,7 @@ export default function App() {
       );
     }
     return arr.sort((a, b) => b.score - a.score);
-  }, [baseRecipes, invMap, favorites, onlyCookable, recipeQuery]);
+  }, [baseRecipes, invMap, favoritesSet, onlyCookable, recipeQuery]);
 
   // ======= SHOPPING =======
   const addMissingToShopping = (missingNames: string[]) => {
@@ -262,7 +251,7 @@ export default function App() {
     toast.add("Cooked!");
   };
 
-  // ======= ANALYTICS =======
+  // ======= Analytics “mini” =======
   const catCounts = items.reduce((acc: Record<string, number>, it) => {
     acc[it.category] = (acc[it.category] || 0) + 1;
     return acc;
@@ -284,90 +273,84 @@ export default function App() {
     i.status.toLowerCase().includes("expires")
   );
 
-  const canCookToday = useMemo(() => {
-    const servings = 2;
-    const can = baseRecipes.filter((r) => {
-      const req = Object.entries(r.uses || {});
-      return req.every(
-        ([k, v]) => (invMap.get(normalize(k)) ?? 0) >= v * servings
-      );
-    }).length;
-    return {
-      can,
-      total: baseRecipes.length,
-      pct: Math.round((can / Math.max(1, baseRecipes.length)) * 100),
-    };
-  }, [invMap]);
-
   /** ===================== UI ===================== */
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       {/* TOPBAR */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-green-700 to-green-500 text-white shadow-md">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Brain className="w-6 h-6" />
-          <h1 className="text-lg font-bold tracking-wide">SmartPantry AI</h1>
-          <div className="flex-1" />
-          <div className="relative w-[48%] min-w-[240px]">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-white/80" />
-            <input
-              ref={searchRef}
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              placeholder="Search inventory & recipes…"
-              className="w-full pl-9 pr-3 py-2 rounded-lg text-sm text-black"
-              aria-label="Global search"
-            />
+      <header className="sticky top-0 z-40">
+        <div className="mx-auto max-w-5xl px-4 py-3 app-topbar">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-xl" style={{ background: "color-mix(in oklab, var(--brand) 22%, transparent)" }} />
+              <h1 className="text-lg font-extrabold tracking-wide">SmartPantry AI</h1>
+            </div>
+            <div className="flex-1" />
+            <div className="relative w-[46%] min-w-[240px]">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
+              <input
+                ref={searchRef}
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                placeholder="Buscar inventario y recetas…"
+                className="search-input"
+                aria-label="Global search"
+              />
+            </div>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className="btn-icon ml-2"
+              aria-label="Settings"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={() => setActiveTab("settings")}
-            className="ml-2 p-2 rounded-lg bg-white/15 hover:bg-white/25"
-            aria-label="Settings"
-            title="Settings"
-          >
-            <Settings className="w-5 h-5 text-white" />
-          </button>
-        </div>
 
-        {/* TABS */}
-        <nav className="bg-white/10 backdrop-blur-sm">
-          <div className="max-w-3xl mx-auto grid grid-cols-4">
-            {[
-              { k: "inventory", icon: <ListChecks className="w-5 h-5" />, label: "Inventory" },
-              { k: "recipes", icon: <ChefHat className="w-5 h-5" />, label: "Recipes" },
-              { k: "shopping", icon: <ShoppingCart className="w-5 h-5" />, label: "Shopping" },
-              { k: "analytics", icon: <BarChart className="w-5 h-5" />, label: "Analytics" },
-            ].map((t) => (
-              <button
-                key={t.k}
-                onClick={() => setActiveTab(t.k as any)}
-                className={`py-2 flex items-center justify-center gap-2 text-sm ${
-                  activeTab === (t.k as any) ? "bg-white/20 font-semibold" : "hover:bg-white/10"
-                }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </nav>
+          {/* TABS */}
+          <nav className="mt-3">
+            <div className="mx-auto max-w-5xl tabs">
+              {[
+                { k: "inventory", icon: <ListChecks className="w-4 h-4" />, label: "Inventory" },
+                { k: "recipes", icon: <ChefHat className="w-4 h-4" />, label: "Recipes" },
+                { k: "shopping", icon: <ShoppingCart className="w-4 h-4" />, label: "Shopping" },
+                { k: "analytics", icon: <BarChart className="w-4 h-4" />, label: "Analytics" },
+              ].map((t) => (
+                <button
+                  key={t.k}
+                  onClick={() => setActiveTab(t.k as any)}
+                  className="tab"
+                  aria-current={activeTab === t.k ? "page" : undefined}
+                >
+                  {t.icon}
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </nav>
+        </div>
       </header>
 
       {/* CONTENT */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto p-4 space-y-6">
+      <main className="flex-1">
+        <div className="max-w-5xl mx-auto p-4 space-y-6">
           {/* INVENTORY */}
           {activeTab === "inventory" && (
-            <section className="sp-card p-4 sp-card-lg">
+            <motion.section
+              className="sp-card p-4 sp-card-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Filter className="w-4 h-4 text-green-700" />
+                <Filter className="w-4 h-4" style={{ color: "var(--brand)" }} />
                 <div className="flex gap-2">
                   {["all", "fridge", "freezer", "pantry", "expiring"].map((f) => (
                     <button
                       key={f}
                       onClick={() => useStore.getState().setFilter(f as any)}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        prefs.filter === f ? "bg-green-600 text-white" : "bg-gray-200 text-gray-700"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                        prefs.filter === f
+                          ? "sp-btn-primary"
+                          : "sp-btn-ghost"
                       }`}
                     >
                       {f}
@@ -376,25 +359,18 @@ export default function App() {
                 </div>
                 <div className="flex-1" />
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">Sort</span>
-                  <button
-                    className={`px-2 py-1 rounded-md text-xs border ${prefs.sort === "az" ? "bg-white" : "bg-gray-100"}`}
-                    onClick={() => setSort("az")}
-                  >
-                    A-Z
-                  </button>
-                  <button
-                    className={`px-2 py-1 rounded-md text-xs border ${prefs.sort === "qty" ? "bg-white" : "bg-gray-100"}`}
-                    onClick={() => setSort("qty")}
-                  >
-                    Qty
-                  </button>
-                  <button
-                    className={`px-2 py-1 rounded-md text-xs border ${prefs.sort === "status" ? "bg-white" : "bg-gray-100"}`}
-                    onClick={() => setSort("status")}
-                  >
-                    Status
-                  </button>
+                  <span className="text-xs text-muted">Sort</span>
+                  {(["az", "qty", "status"] as const).map((k) => (
+                    <button
+                      key={k}
+                      className={`px-2 py-1 rounded-md text-xs border ${
+                        prefs.sort === k ? "surface border-subtle" : "sp-btn-ghost"
+                      }`}
+                      onClick={() => setSort(k)}
+                    >
+                      {k.toUpperCase()}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -404,34 +380,42 @@ export default function App() {
                   subtitle="Prueba a limpiar filtros o añade productos desde Shopping."
                 />
               ) : (
-                <ul className="space-y-2">
+                <ul className="grid md:grid-cols-2 gap-3">
                   {filteredItems.map((item) => (
-                    <li
+                    <motion.li
                       key={item.id}
-                      className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm"
+                      className="flex justify-between items-center surface p-3 rounded-xl border-subtle sp-card-hover"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
                     >
                       <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-xs text-muted">
                           {item.location} · {item.category}
                         </p>
                       </div>
-                      <span className={`text-xs ${item.statusColor}`}>{item.status}</span>
-                    </li>
+                      <span className="text-xs" style={{ color: item.statusColor.includes("red") ? "#ef4444" : item.statusColor.includes("yellow") ? "#f59e0b" : "#10b981" }}>
+                        {item.status}
+                      </span>
+                    </motion.li>
                   ))}
                 </ul>
               )}
-            </section>
+            </motion.section>
           )}
 
           {/* RECIPES */}
           {activeTab === "recipes" && (
-            <section className="sp-card p-4 sp-card-lg">
+            <motion.section
+              className="sp-card p-4 sp-card-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <div className="flex items-center gap-2 mb-3">
-                <ChefHat className="w-5 h-5 text-green-700" />
-                <h2 className="text-lg font-bold">Recipes (Smart)</h2>
+                <ChefHat className="w-5 h-5" style={{ color: "var(--brand)" }} />
+                <h2 className="text-lg font-extrabold">Recipes (Smart)</h2>
                 <div className="flex-1" />
-                <label className="flex items-center gap-2 text-xs">
+                <label className="flex items-center gap-2 text-xs text-muted">
                   <input
                     type="checkbox"
                     checked={onlyCookable}
@@ -441,7 +425,7 @@ export default function App() {
                 </label>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid md:grid-cols-2 gap-3">
                 {scoredRecipes.map(({ r, score, missingCount }) => {
                   const have = Object.keys(r.uses).filter(
                     (b) => (invMap.get(normalize(b)) ?? 0) >= (r.uses[b] || 0)
@@ -450,76 +434,68 @@ export default function App() {
                   const fav = favorites.has(r.name);
 
                   return (
-                    <article key={r.name} className="bg-white rounded-xl p-3 border shadow-sm">
+                    <motion.article
+                      key={r.name}
+                      className="rounded-2xl p-3 border-subtle surface sp-card-hover"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-semibold">{r.name}</h3>
-                          <p className="text-xs text-gray-500">
+                          <h3 className="font-bold text-base">{r.name}</h3>
+                          <p className="text-xs text-muted">
                             {r.time} · {r.difficulty} · Score {score}
                           </p>
                         </div>
                         <button
                           onClick={() => toggleFavorite(r.name)}
-                          className="p-2 rounded-lg border"
+                          className="btn-icon"
                           title={fav ? "Unfavorite" : "Favorite"}
                         >
                           {fav ? <HeartOff className="w-4 h-4" /> : <Heart className="w-4 h-4" />}
                         </button>
                       </div>
 
-                      <p className="text-[12px] text-gray-700 mt-1">
+                      <p className="text-[12px] mt-2">
                         <span className="font-semibold">Ingredients:</span> {r.ingredients}
                       </p>
-                      <div className="flex gap-2 mt-1 flex-wrap">
+                      <div className="flex gap-2 mt-2 flex-wrap">
                         {r.tags.map((t) => (
-                          <span
-                            key={t}
-                            className="bg-gray-100 border text-gray-700 text-[11px] px-2 py-0.5 rounded-full"
-                          >
-                            {t}
-                          </span>
+                          <span key={t} className="badge">{t}</span>
                         ))}
                       </div>
 
-                      <div className="text-[12px] text-gray-700 mt-2 space-y-1">
-                        <p>
-                          <span className="font-semibold">Have:</span>{" "}
-                          {have.length ? have.join(", ") : "—"}
-                        </p>
-                        <p>
-                          <span className="font-semibold">Missing:</span>{" "}
-                          {missing.length ? missing.join(", ") : "—"}
-                        </p>
+                      <div className="grid grid-cols-2 gap-3 mt-3 text-[12px]">
+                        <div className="surface-2 rounded-lg p-2 border-subtle">
+                          <p className="text-muted font-semibold mb-1">Have</p>
+                          <p>{have.length ? have.join(", ") : "—"}</p>
+                        </div>
+                        <div className="surface-2 rounded-lg p-2 border-subtle">
+                          <p className="text-muted font-semibold mb-1">Missing</p>
+                          <p>{missing.length ? missing.join(", ") : "—"}</p>
+                        </div>
                       </div>
 
                       <div className="flex gap-2 mt-3">
-                        <button
-                          onClick={() => cookNow(r)}
-                          className="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold"
-                        >
+                        <button onClick={() => cookNow(r)} className="sp-btn sp-btn-primary px-3 py-2 text-xs">
                           Cook now
                         </button>
                         {missingCount > 0 && (
-                          <button
-                            onClick={() => addMissingToShopping(missing)}
-                            className="px-3 py-2 rounded-lg border bg-white text-xs font-semibold"
-                          >
+                          <button onClick={() => addMissingToShopping(missing)} className="sp-btn sp-btn-ghost px-3 py-2 text-xs">
                             Add Missing
                           </button>
                         )}
                       </div>
 
                       {!!r.steps?.length && (
-                        <details className="mt-2">
-                          <summary className="text-xs text-gray-600 cursor-pointer">Steps</summary>
-                          <ol className="list-decimal list-inside text-xs text-gray-700 mt-1 space-y-1">
-                            {r.steps.map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
+                        <details className="mt-3">
+                          <summary className="text-xs text-muted cursor-pointer">Steps</summary>
+                          <ol className="list-decimal list-inside text-xs mt-1 space-y-1">
+                            {r.steps.map((s, i) => (<li key={i}>{s}</li>))}
                           </ol>
                         </details>
                       )}
-                    </article>
+                    </motion.article>
                   );
                 })}
               </div>
@@ -530,118 +506,60 @@ export default function App() {
                   subtitle="Prueba a desactivar ‘Cookable now’ o ajusta la búsqueda."
                 />
               )}
-            </section>
+            </motion.section>
           )}
 
           {/* SHOPPING */}
           {activeTab === "shopping" && (
-            <section className="sp-card p-4 sp-card-lg">
+            <motion.section className="sp-card p-4 sp-card-lg" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <div className="flex items-center gap-2 mb-3">
-                <ShoppingCart className="w-5 h-5 text-green-700" />
-                <h2 className="text-lg font-bold">Shopping List</h2>
+                <ShoppingCart className="w-5 h-5" style={{ color: "var(--brand)" }} />
+                <h2 className="text-lg font-extrabold">Shopping List</h2>
               </div>
 
-              {/* Add row */}
-              <div className="flex gap-2 mb-3">
-                <input
-                  value={newItem}
-                  onChange={(e) => setNewItem(e.target.value)}
-                  placeholder="Add item"
-                  className="flex-1 border rounded-lg px-3 py-2 text-sm"
-                />
-                <input
-                  type="number"
-                  min={1}
-                  value={newItemQty}
-                  onChange={(e) => setNewItemQty(parseInt(e.target.value || "1"))}
-                  className="w-20 border rounded-lg px-2 py-2 text-sm"
-                />
-                <select
-                  value={newItemUnit}
-                  onChange={(e) => setNewItemUnit(e.target.value)}
-                  className="border rounded-lg px-2 py-2 text-sm"
-                >
-                  <option value="units">units</option>
-                  <option value="kg">kg</option>
-                  <option value="g">g</option>
-                  <option value="L">L</option>
-                  <option value="ml">ml</option>
-                  <option value="packs">packs</option>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <input value={newItem} onChange={(e) => setNewItem(e.target.value)} placeholder="Add item" className="input min-w-[200px] flex-1" />
+                <input type="number" min={1} value={newItemQty} onChange={(e) => setNewItemQty(parseInt(e.target.value || "1"))} className="input w-20" />
+                <select value={newItemUnit} onChange={(e) => setNewItemUnit(e.target.value)} className="select">
+                  <option value="units">units</option><option value="kg">kg</option><option value="g">g</option>
+                  <option value="L">L</option><option value="ml">ml</option><option value="packs">packs</option>
                 </select>
-                <select
-                  value={newItemLoc}
-                  onChange={(e) => setNewItemLoc(e.target.value as any)}
-                  className="border rounded-lg px-2 py-2 text-sm"
-                >
-                  <option>Pantry</option>
-                  <option>Fridge</option>
-                  <option>Freezer</option>
+                <select value={newItemLoc} onChange={(e) => setNewItemLoc(e.target.value as any)} className="select">
+                  <option>Pantry</option><option>Fridge</option><option>Freezer</option>
                 </select>
-                <button
-                  onClick={addNewItemToList}
-                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold"
-                >
-                  Add
-                </button>
+                <button onClick={addNewItemToList} className="sp-btn sp-btn-primary px-4 py-2 text-sm">Add</button>
               </div>
 
-              {/* Grouped lists */}
               <div className="space-y-4">
                 {["Pantry", "Fridge", "Freezer"].map((loc) => {
                   const arr = shoppingList.filter((r) => r.location === (loc as any));
                   if (arr.length === 0) return null;
                   const total = arr.reduce((s, r) => s + r.qty, 0);
                   return (
-                    <div key={loc} className="bg-white rounded-xl border shadow-sm">
+                    <div key={loc} className="rounded-2xl border-subtle surface">
                       <div className="px-3 py-2 flex items-center justify-between">
                         <div className="font-semibold">{loc}</div>
-                        <div className="text-xs text-gray-600">
-                          Items: {arr.length} · Qty: {total}
-                        </div>
+                        <div className="text-xs text-muted">Items: {arr.length} · Qty: {total}</div>
                       </div>
-                      <ul className="divide-y">
+                      <ul className="divide-y border-subtle/50">
                         {arr.map((it) => (
                           <li key={it.id} className="p-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => updateQtyRow(it.id, -1)}
-                                className="p-1 rounded-md bg-white border"
-                              >
-                                <Minus className="w-4 h-4" />
-                              </button>
+                              <button onClick={() => updateQtyRow(it.id, -1)} className="btn-icon"><Minus className="w-4 h-4" /></button>
                               <span className="min-w-[48px] text-center font-semibold">{it.qty}</span>
-                              <button
-                                onClick={() => updateQtyRow(it.id, +1)}
-                                className="p-1 rounded-md bg-white border"
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
+                              <button onClick={() => updateQtyRow(it.id, +1)} className="btn-icon"><Plus className="w-4 h-4" /></button>
                               <span className="ml-2 font-medium">{it.name}</span>
-                              <span className="text-xs text-gray-500">({it.unit})</span>
+                              <span className="text-xs text-muted">({it.unit})</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <select
-                                value={it.location}
-                                onChange={(e) => changeLocRow(it.id, e.target.value as any)}
-                                className="border rounded-lg px-2 py-1 text-xs"
-                              >
-                                <option>Pantry</option>
-                                <option>Fridge</option>
-                                <option>Freezer</option>
+                              <select value={it.location} onChange={(e) => changeLocRow(it.id, e.target.value as any)} className="select px-2 py-1 text-xs w-[110px]">
+                                <option>Pantry</option><option>Fridge</option><option>Freezer</option>
                               </select>
                               <label className="flex items-center gap-1 text-xs">
-                                <input
-                                  type="checkbox"
-                                  checked={it.purchased}
-                                  onChange={() => togglePurchasedRow(it.id)}
-                                />
+                                <input type="checkbox" checked={it.purchased} onChange={() => togglePurchasedRow(it.id)} />
                                 purchased
                               </label>
-                              <button
-                                onClick={() => removeRow(it.id)}
-                                className="p-1 rounded-md bg-white border text-red-600 hover:bg-red-50"
-                                aria-label="Remove item"
-                              >
+                              <button onClick={() => removeRow(it.id)} className="btn-icon" aria-label="Remove item">
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
@@ -654,150 +572,116 @@ export default function App() {
               </div>
 
               <button
-                onClick={() => {
-                  finalizePurchase();
-                  toast.add("Inventory updated");
-                }}
-                className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
+                onClick={() => { finalizePurchase(); toast.add("Inventory updated"); }}
+                className="w-full mt-4 sp-btn sp-btn-primary py-3 text-sm"
               >
                 <CheckCircle2 className="w-5 h-5" /> Finalize Purchase & Update Inventory
               </button>
-            </section>
+            </motion.section>
           )}
 
           {/* ANALYTICS */}
           {activeTab === "analytics" && (
-            <section className="sp-card p-4 sp-card-lg">
-              <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                <BarChart className="w-5 h-5 text-green-700" /> Analytics Dashboard
+            <motion.section className="sp-card p-4 sp-card-lg" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <h2 className="text-lg font-extrabold mb-2 flex items-center gap-2">
+                <BarChart className="w-5 h-5" style={{ color: "var(--brand)" }} /> Analytics Dashboard
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
-                <KPI
-                  title="Cookable Today"
-                  value={`${canCookToday.can}/${canCookToday.total} (${canCookToday.pct}%)`}
-                />
                 <KPI title="Veg share" value={`${macroPct.greens}%`} />
                 <KPI title="Protein share" value={`${macroPct.protein}%`} />
                 <KPI title="Carbs share" value={`${macroPct.carbs}%`} />
+                <KPI title="Fats share" value={`${macroPct.fats}%`} />
               </div>
 
-              <div className="mt-4 bg-white rounded-xl border shadow-sm p-3">
-                <h3 className="font-semibold mb-1">At risk</h3>
+              <div className="mt-4 rounded-2xl border-subtle surface p-3">
+                <h3 className="font-semibold mb-2">At risk</h3>
                 {atRiskItems.length === 0 ? (
-                  <p className="text-xs text-gray-600">Sin riesgo ahora mismo.</p>
+                  <p className="text-xs text-muted">Sin riesgo ahora mismo.</p>
                 ) : (
-                  <ul className="text-sm list-disc pl-6">
-                    {atRiskItems.slice(0, 6).map((i) => (
-                      <li key={i.id} className="flex justify-between">
+                  <ul className="text-sm">
+                    {atRiskItems.slice(0, 8).map((i) => (
+                      <li key={i.id} className="flex justify-between py-1">
                         <span>{i.baseName}</span>
-                        <span className="text-xs text-red-600">{i.status}</span>
+                        <span style={{ color: "#ef4444" }} className="text-xs">{i.status}</span>
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
-            </section>
+            </motion.section>
           )}
 
           {/* SETTINGS */}
           {activeTab === "settings" && (
-            <section className="sp-card p-4 sp-card-lg">
-              <h2 className="text-lg font-bold mb-2 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-green-700" /> Settings
+            <motion.section className="sp-card p-4 sp-card-lg" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <h2 className="text-lg font-extrabold mb-2 flex items-center gap-2">
+                <Settings className="w-5 h-5" style={{ color: "var(--brand)" }} /> Settings
               </h2>
-              <div className="space-y-3 text-sm">
-                <div className="bg-white rounded-xl border shadow-sm p-3">
+
+              <div className="grid md:grid-cols-2 gap-3 text-sm">
+                {/* Theme */}
+                <div className="rounded-2xl border-subtle surface p-3">
                   <p className="font-semibold">Appearance</p>
                   <div className="mt-2 flex items-center gap-2">
                     <button
-                      onClick={() => {
-                        document.documentElement.classList.remove("dark");
-                        setTheme("light");
-                        toast.add("Theme: Light");
-                      }}
-                      className="px-3 py-2 border rounded-lg"
-                    >
-                      Light
-                    </button>
+                      onClick={() => { document.documentElement.classList.add("light"); setTheme("light"); }}
+                      className="sp-btn sp-btn-ghost px-3 py-2"
+                    >Light</button>
+                    <button
+                      onClick={() => { document.documentElement.classList.remove("light"); setTheme("dark"); }}
+                      className="sp-btn sp-btn-ghost px-3 py-2"
+                    >Dark</button>
                     <button
                       onClick={() => {
-                        document.documentElement.classList.add("dark");
-                        setTheme("dark");
-                        toast.add("Theme: Dark");
-                      }}
-                      className="px-3 py-2 border rounded-lg"
-                    >
-                      Dark
-                    </button>
-                    <button
-                      onClick={() => {
-                        const prefersDark =
-                          window.matchMedia &&
-                          window.matchMedia("(prefers-color-scheme: dark)").matches;
-                        document.documentElement.classList.toggle("dark", prefersDark);
+                        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                        document.documentElement.classList.toggle("light", !prefersDark);
                         setTheme("system");
-                        toast.add("Theme: System");
                       }}
-                      className="px-3 py-2 border rounded-lg"
-                    >
-                      System
-                    </button>
+                      className="sp-btn sp-btn-ghost px-3 py-2"
+                    >System</button>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border shadow-sm p-3">
+                {/* Goals */}
+                <div className="rounded-2xl border-subtle surface p-3">
                   <p className="font-semibold">Goals</p>
                   <div className="mt-2 flex flex-wrap gap-2 items-center">
                     <label className="text-xs">
                       Waste ≤
-                      <input
-                        type="number"
-                        className="ml-1 border rounded px-2 py-1 w-16"
-                        value={prefs.goals.wastePct}
+                      <input type="number" className="input ml-1 w-16 inline-block"
                         onChange={(e) => setGoals({ wastePct: Number(e.target.value || 0) })}
                       />
                       %
                     </label>
                     <label className="text-xs">
                       Savings ≥ €
-                      <input
-                        type="number"
-                        className="ml-1 border rounded px-2 py-1 w-20"
-                        value={prefs.goals.savings}
+                      <input type="number" className="input ml-1 w-20 inline-block"
                         onChange={(e) => setGoals({ savings: Number(e.target.value || 0) })}
                       />
                     </label>
                     <label className="text-xs">
                       Green meals / week ≥
-                      <input
-                        type="number"
-                        className="ml-1 border rounded px-2 py-1 w-16"
-                        value={prefs.goals.greenMealsPerWeek}
-                        onChange={(e) =>
-                          setGoals({ greenMealsPerWeek: Number(e.target.value || 0) })
-                        }
+                      <input type="number" className="input ml-1 w-16 inline-block"
+                        onChange={(e) => setGoals({ greenMealsPerWeek: Number(e.target.value || 0) })}
                       />
                     </label>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border shadow-sm p-3">
+                {/* Data */}
+                <div className="rounded-2xl border-subtle surface p-3 md:col-span-2">
                   <p className="font-semibold">Data</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button
-                      onClick={() => {
-                        localStorage.clear();
-                        toast.add("Local data cleared");
-                        window.location.reload();
-                      }}
-                      className="px-3 py-2 border rounded-lg text-red-600"
+                      onClick={() => { localStorage.clear(); window.location.reload(); }}
+                      className="sp-btn sp-btn-danger px-3 py-2"
                     >
                       Clear localStorage
                     </button>
                   </div>
                 </div>
               </div>
-            </section>
+            </motion.section>
           )}
         </div>
       </main>
@@ -808,19 +692,19 @@ export default function App() {
   );
 }
 
-/** ===================== SMALL UI PIECES ===================== */
+/** ===================== Small UI pieces ===================== */
 function KPI({ title, value }: { title: string; value: string }) {
   return (
-    <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-      <p className="text-gray-500">{title}</p>
-      <p className="text-xl font-bold text-green-700">{value}</p>
+    <div className="kpi">
+      <p className="kpi-title">{title}</p>
+      <p className="kpi-value">{value}</p>
     </div>
   );
 }
 
 function EmptyState({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="text-center text-sm text-gray-600 py-8">
+    <div className="text-center text-sm text-muted py-8">
       <p className="font-semibold">{title}</p>
       {subtitle && <p className="text-xs mt-1">{subtitle}</p>}
     </div>
