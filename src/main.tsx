@@ -1,12 +1,14 @@
 import React from 'react'
-import { createRoot } from 'react-dom/client'
+import ReactDOM from 'react-dom/client'
 import App from './App'
+
+// Hoja global con Tailwind + Design System
 import './styles.css'
-import { registerSW } from 'virtual:pwa-register'
 
-registerSW({ immediate: true })
+// 👉 tema claro por defecto (puedes cambiarlo en Settings)
+document.documentElement.classList.add('light')
 
-createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
