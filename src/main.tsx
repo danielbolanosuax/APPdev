@@ -1,15 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
+// src/main.tsx
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
 
 // Hoja global con Tailwind + Design System
-import './styles.css'
+import "./styles.css";
 
-// 👉 tema claro por defecto (puedes cambiarlo en Settings)
-document.documentElement.classList.add('light')
+// Tema por defecto: 'light' si aún no hay tema aplicado
+const html = document.documentElement;
+if (!html.classList.contains("light") && !html.classList.contains("dark")) {
+  html.classList.add("light"); // compatible con tu Settings
+}
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+// Montaje seguro
+const rootEl = document.getElementById("root");
+if (!rootEl) {
+  throw new Error("No se encontró el elemento #root en index.html");
+}
+
+createRoot(rootEl).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
-)
+  </React.StrictMode>,
+);

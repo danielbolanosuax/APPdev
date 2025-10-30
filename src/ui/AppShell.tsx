@@ -1,14 +1,15 @@
 import React from "react";
-import {
-  ListChecks,
-  ChefHat,
-  ShoppingCart,
-  BarChart,
-  Settings,
-  Search,
-} from "lucide-react";
+import { LayoutGrid, Search, Settings } from "lucide-react";
 
-type TabKey = "inventory" | "recipes" | "shopping" | "analytics" | "settings";
+type Tab = "inventory" | "recipes" | "shopping" | "analytics" | "settings";
+
+type Props = {
+  activeTab: Tab;
+  setActiveTab: (t: Tab) => void;
+  globalSearch: string;
+  setGlobalSearch: (v: string) => void;
+  children: React.ReactNode;
+};
 
 export default function AppShell({
   activeTab,
@@ -16,81 +17,50 @@ export default function AppShell({
   globalSearch,
   setGlobalSearch,
   children,
-}: {
-  activeTab: TabKey;
-  setActiveTab: (t: TabKey) => void;
-  globalSearch: string;
-  setGlobalSearch: (s: string) => void;
-  children: React.ReactNode;
-}) {
-  const items = [
-    { k: "inventory", label: "Inventory", icon: <ListChecks className="w-5 h-5" /> },
-    { k: "recipes", label: "Recipes", icon: <ChefHat className="w-5 h-5" /> },
-    { k: "shopping", label: "Shopping", icon: <ShoppingCart className="w-5 h-5" /> },
-    { k: "analytics", label: "Analytics", icon: <BarChart className="w-5 h-5" /> },
-    { k: "settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
-  ] as const;
-
+}: Props) {
   return (
     <div className="app-shell">
-      {/* Header */}
-      <header className="app-header-pro">
-        <div className="brand">
-          <div className="logo-dot" />
-          <h1 className="brand-title">SmartPantry</h1>
+      <header className="appbar">
+        <div className="left">
+          <LayoutGrid className="w-5 h-5" />
+          <span className="brand">SmartPantry AI</span>
         </div>
-
-        <div className="search-wrap">
-          <Search className="search-icon" />
-          <input
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
-            className="search-input-lg"
-            placeholder="Search inventory & recipes…"
-            aria-label="Global search"
-          />
+        <div className="center">
+          <div className="tool search">
+            <Search className="tool-icon" />
+            <input
+              value={globalSearch}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalSearch(e.target.value)}
+              className="search-input"
+              placeholder="Search…"
+              aria-label="Search"
+            />
+          </div>
+        </div>
+        <div className="right">
+          <button
+            className={`tab ${activeTab === "settings" ? "on" : ""}`}
+            onClick={() => setActiveTab("settings")}
+            aria-label="Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
-      {/* Sidebar (desktop) */}
-      <aside className="nav-rail">
-        {items.map((it) => {
-          const active = activeTab === it.k;
-          return (
-            <button
-              key={it.k}
-              className={`nav-rail-btn ${active ? "is-active" : ""}`}
-              onClick={() => setActiveTab(it.k as any)}
-              title={it.label}
-              aria-current={active ? "page" : undefined}
-            >
-              {it.icon}
-              <span className="label">{it.label}</span>
-            </button>
-          );
-        })}
-      </aside>
-
-      {/* Main content */}
-      <main className="app-main">{children}</main>
-
-      {/* Bottom nav (mobile) */}
-      <nav className="bottom-nav-pro">
-        {items.map((it) => {
-          const active = activeTab === it.k;
-          return (
-            <button
-              key={it.k}
-              className={`bottom-nav-btn ${active ? "is-active" : ""}`}
-              onClick={() => setActiveTab(it.k as any)}
-              aria-current={active ? "page" : undefined}
-            >
-              {it.icon}
-              <span className="label">{it.label}</span>
-            </button>
-          );
-        })}
+      <nav className="tabs">
+        {(["inventory", "recipes", "shopping", "analytics"] as Tab[]).map((t) => (
+          <button
+            key={t}
+            className={`tab ${activeTab === t ? "on" : ""}`}
+            onClick={() => setActiveTab(t)}
+          >
+            {t}
+          </button>
+        ))}
       </nav>
+
+      <main className="content">{children}</main>
     </div>
   );
 }

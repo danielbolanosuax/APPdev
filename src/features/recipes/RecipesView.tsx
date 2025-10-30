@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { useStore, selectors, normalize, Location } from "../../state/store";
 
-/* ===== Base recipes ===== */
+/* ===== Tipos ===== */
 export type Recipe = {
   name: string;
   ingredients: string;
   uses: Record<string, number>;
-  time: string; // "20 min"
+  time: string;
   difficulty: "Easy" | "Medium" | "Hard";
   rating: number;
   tags: string[];
@@ -26,6 +26,12 @@ export type Recipe = {
   allergens?: string[];
 };
 
+type StoreExtras = {
+  recipeOutput?: string | null;
+  setRecipeOutput?: (v: string | null) => void;
+};
+
+/* ===== Data base ===== */
 const BASE_RECIPES: Recipe[] = [
   {
     name: "Tomato Pasta",
@@ -64,16 +70,62 @@ const parseMins = (s: string) => {
   const m = /(\d+)\s*min/i.exec(s || "");
   return m ? parseInt(m[1], 10) : 60;
 };
-const TIME_FILTERS: { k: string; label: string; max?: number }[] = [
+const TIME_FILTERS: { k: "any" | "15" | "30" | "45" | "60"; label: string; max?: number }[] = [
   { k: "any", label: "Any time" },
   { k: "15", label: "≤ 15 min", max: 15 },
   { k: "30", label: "≤ 30", max: 30 },
   { k: "45", label: "≤ 45", max: 45 },
-  { k: "60", label: "> 45", max: undefined },
+  { k: "60", label: "> 45" },
 ];
 
+/* ===== Router sin hooks condicionales ===== */
 export default function RecipesView() {
-  // store
+  const recipeOutput = useStore((s) => (s as StoreExtras).recipeOutput ?? null);
+  const setRecipeOutput = useStore((s) => (s as StoreExtras).setRecipeOutput ?? (() => {}));
+  if (recipeOutput !== null) {
+    return <GeneratedRecipeView recipeOutput={recipeOutput} onBack={() => setRecipeOutput(null)} />;
+  }
+  return <RecipesListView />;
+}
+
+/* ===== Vista receta generada ===== */
+function GeneratedRecipeView({
+  recipeOutput,
+  onBack,
+}: {
+  recipeOutput: string;
+  onBack: () => void;
+}) {
+  return (
+    <section className="recipes-wrap">
+      <div className="card-head">
+        <div className="card-title">
+          <span className="ringed">
+            <ChefHat className="w-4 h-4" />
+          </span>
+          <div>
+            <h3>Recipes</h3>
+            <p className="eyebrow">Generated recipe</p>
+          </div>
+        </div>
+      </div>
+
+      <button className="sp-btn sp-btn-ghost" onClick={onBack}>
+        Volver
+      </button>
+
+      <div
+        className="surface border-subtle rounded-2xl p-4 mt-3"
+        style={{ whiteSpace: "pre-wrap" }}
+      >
+        {recipeOutput}
+      </div>
+    </section>
+  );
+}
+
+/* ===== Vista lista de recetas ===== */
+function RecipesListView() {
   const items = useStore(selectors.items);
   const setItems = useStore((s) => s.setItems);
   const addCook = useStore((s) => s.addCook);
@@ -81,12 +133,11 @@ export default function RecipesView() {
   const toggleFavorite = useStore((s) => s.toggleFavorite);
   const favorites = useStore(selectors.favoritesSet);
 
-  // UI filters
   const [query, setQuery] = useState("");
   const [onlyCookable, setOnlyCookable] = useState(false);
   const [timeKey, setTimeKey] = useState<"any" | "15" | "30" | "45" | "60">("any");
   const [levels, setLevels] = useState<Set<Recipe["difficulty"]>>(
-    () => new Set(["Easy", "Medium", "Hard"])
+    () => new Set(["Easy", "Medium", "Hard"]),
   );
   const [sortBy, setSortBy] = useState<"score" | "time" | "name">("score");
 
@@ -113,29 +164,22 @@ export default function RecipesView() {
       };
     });
 
-    // filters
     if (onlyCookable) arr = arr.filter((x) => x.missingCount === 0);
     if (timeKey !== "any") {
       const conf = TIME_FILTERS.find((t) => t.k === timeKey)!;
-      if (conf.max) {
-        arr = arr.filter((x) => parseMins(x.r.time) <= (conf.max as number));
-      } else {
-        arr = arr.filter((x) => parseMins(x.r.time) > 45);
-      }
+      if (conf.max !== undefined) arr = arr.filter((x) => parseMins(x.r.time) <= conf.max);
+      else arr = arr.filter((x) => parseMins(x.r.time) > 45);
     }
-    if (levels.size !== 3) {
-      arr = arr.filter((x) => levels.has(x.r.difficulty));
-    }
+    if (levels.size !== 3) arr = arr.filter((x) => levels.has(x.r.difficulty));
     if (q) {
       arr = arr.filter(
         (x) =>
           normalize(x.r.name).includes(q) ||
           normalize(x.r.ingredients).includes(q) ||
-          x.r.tags.some((t) => normalize(t).includes(q))
+          x.r.tags.some((t) => normalize(t).includes(q)),
       );
     }
 
-    // sort
     arr = arr.sort((a, b) => {
       if (sortBy === "score") return b.score - a.score;
       if (sortBy === "time") return parseMins(a.r.time) - parseMins(b.r.time);
@@ -163,7 +207,7 @@ export default function RecipesView() {
 
   const addMissingToShopping = (names: string[]) => {
     names.forEach((m) =>
-      addRow({ name: m, qty: 1, unit: "units", location: "Pantry" as Location, purchased: false })
+      addRow({ name: m, qty: 1, unit: "units", location: "Pantry" as Location, purchased: false }),
     );
     alert("Missing items added");
   };
@@ -173,7 +217,9 @@ export default function RecipesView() {
       {/* Header */}
       <div className="card-head">
         <div className="card-title">
-          <span className="ringed"><ChefHat className="w-4 h-4" /></span>
+          <span className="ringed">
+            <ChefHat className="w-4 h-4" />
+          </span>
           <div>
             <h3>Recipes</h3>
             <p className="eyebrow">Smart suggestions based on your pantry</p>
@@ -187,7 +233,7 @@ export default function RecipesView() {
           <Search className="tool-icon" />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
             className="search-input"
             placeholder="Search recipes…"
             aria-label="Search recipes"
@@ -195,7 +241,11 @@ export default function RecipesView() {
         </div>
 
         <label className="tool checkbox">
-          <input type="checkbox" checked={onlyCookable} onChange={(e) => setOnlyCookable(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={onlyCookable}
+            onChange={(e) => setOnlyCookable(e.target.checked)}
+          />
           Cookable now
         </label>
 
@@ -205,8 +255,8 @@ export default function RecipesView() {
             <button
               key={t.k}
               role="tab"
-              aria-checked={timeKey === (t.k as any)}
-              onClick={() => setTimeKey(t.k as any)}
+              aria-checked={timeKey === t.k}
+              onClick={() => setTimeKey(t.k)}
               className="seg"
             >
               {t.label}
@@ -257,7 +307,9 @@ export default function RecipesView() {
       {/* List */}
       <div className="recipes-list">
         {scored.map(({ r, score }) => {
-          const have = Object.keys(r.uses).filter((b) => (invMap.get(normalize(b)) ?? 0) >= (r.uses[b] || 0));
+          const have = Object.keys(r.uses).filter(
+            (b) => (invMap.get(normalize(b)) ?? 0) >= (r.uses[b] || 0),
+          );
           const missing = Object.keys(r.uses).filter((b) => !have.includes(b));
           const fav = favorites.has(r.name);
           return (
@@ -288,7 +340,7 @@ export default function RecipesView() {
   );
 }
 
-/* ========= Card ========= */
+/* ===== Card ===== */
 function RecipeCard({
   r,
   score,
@@ -338,25 +390,49 @@ function RecipeCard({
         <div>
           <div className="eyebrow">Have</div>
           <div className="chips">
-            {have.length ? have.map((x) => <span key={x} className="chip ok">{x}</span>) : <span className="chip">{'—'}</span>}
+            {have.length ? (
+              have.map((x) => (
+                <span key={x} className="chip ok">
+                  {x}
+                </span>
+              ))
+            ) : (
+              <span className="chip">—</span>
+            )}
           </div>
         </div>
         <div>
           <div className="eyebrow">Missing</div>
           <div className="chips">
-            {missing.length ? missing.map((x) => <span key={x} className="chip warn">{x}</span>) : <span className="chip">{'—'}</span>}
+            {missing.length ? (
+              missing.map((x) => (
+                <span key={x} className="chip warn">
+                  {x}
+                </span>
+              ))
+            ) : (
+              <span className="chip">—</span>
+            )}
           </div>
         </div>
       </div>
 
       <div className="rc-actions">
         <div className="servings">
-          <button className="btn-icon" onClick={() => setServings(Math.max(1, servings - 1))}>-</button>
+          <button className="btn-icon" onClick={() => setServings(Math.max(1, servings - 1))}>
+            -
+          </button>
           <span className="qty">{servings}x</span>
-          <button className="btn-icon" onClick={() => setServings(servings + 1)}>+</button>
+          <button className="btn-icon" onClick={() => setServings(servings + 1)}>
+            +
+          </button>
         </div>
         <div className="rc-buttons">
-          <button className="sp-btn sp-btn-ghost" onClick={onAddMissing} disabled={missing.length === 0}>
+          <button
+            className="sp-btn sp-btn-ghost"
+            onClick={onAddMissing}
+            disabled={missing.length === 0}
+          >
             <ShoppingBasket className="w-4 h-4" /> Add Missing
           </button>
           <button className="sp-btn sp-btn-primary" onClick={() => onCook(servings)}>

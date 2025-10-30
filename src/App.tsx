@@ -1,10 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppShell from "./ui/AppShell";
 import InventoryView from "./features/inventory/InventoryView";
 import RecipesView from "./features/recipes/RecipesView";
 import AnalyticsView from "./features/analytics/AnalyticsView";
 import ShoppingView from "./features/shopping/ShoppingView";
-import { useStore, selectors } from "./state/store";
+import { useStore } from "./state/store";
+
+type Theme = "light" | "dark" | "system";
+type StoreShape = {
+  theme?: Theme;
+  setTheme?: (t: Theme) => void;
+  recipeOutput?: string | null;
+};
 
 function useToasts() {
   const [toasts, setToasts] = useState<{ id: number; msg: string }[]>([]);
@@ -29,12 +36,27 @@ export default function App() {
   const toast = useToasts();
   const Toasts = toast.View;
 
-  // estado tabs & búsqueda global
-  const [activeTab, setActiveTab] = useState<"inventory" | "recipes" | "shopping" | "analytics" | "settings">("inventory");
+  const [activeTab, setActiveTab] = useState<
+    "inventory" | "recipes" | "shopping" | "analytics" | "settings"
+  >("inventory");
   const [globalSearch, setGlobalSearch] = useState("");
-  const searchRef = useRef<HTMLInputElement>(null);
 
-  const setTheme = useStore((s) => s.setTheme);
+  const themeFromStore: Theme = useStore((s) => (s as StoreShape).theme ?? "system");
+  const setTheme = useStore((s) => (s as StoreShape).setTheme);
+  const recipeOutput = useStore((s) => (s as StoreShape).recipeOutput ?? null);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const prefersDark =
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (themeFromStore === "light") root.classList.add("light");
+    else if (themeFromStore === "dark") root.classList.remove("light");
+    else root.classList.toggle("light", !prefersDark);
+  }, [themeFromStore]);
+
+  useEffect(() => {
+    if (recipeOutput) setActiveTab("recipes");
+  }, [recipeOutput]);
 
   return (
     <>
@@ -44,7 +66,6 @@ export default function App() {
         globalSearch={globalSearch}
         setGlobalSearch={setGlobalSearch}
       >
-        {/* CONTENIDO POR PESTAÑA */}
         {activeTab === "inventory" && <InventoryView />}
         {activeTab === "recipes" && <RecipesView />}
         {activeTab === "shopping" && <ShoppingView />}
@@ -60,7 +81,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       document.documentElement.classList.add("light");
-                      setTheme("light");
+                      setTheme?.("light");
                       toast.add("Theme: Light");
                     }}
                     className="sp-btn sp-btn-ghost px-3 py-2"
@@ -70,7 +91,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       document.documentElement.classList.remove("light");
-                      setTheme("dark");
+                      setTheme?.("dark");
                       toast.add("Theme: Dark");
                     }}
                     className="sp-btn sp-btn-ghost px-3 py-2"
@@ -83,7 +104,7 @@ export default function App() {
                         window.matchMedia &&
                         window.matchMedia("(prefers-color-scheme: dark)").matches;
                       document.documentElement.classList.toggle("light", !prefersDark);
-                      setTheme("system");
+                      setTheme?.("system");
                       toast.add("Theme: System");
                     }}
                     className="sp-btn sp-btn-ghost px-3 py-2"
