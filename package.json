@@ -8,7 +8,7 @@
     "check": "npm run lint && npm run typecheck",
     "dev": "vite",
     "format": "prettier --write .",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\"",
     "prepare": "husky",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
@@ -17,7 +17,7 @@
     "*.{ts,tsx,js,jsx,json,css,md}": [
       "prettier --write"
     ],
-    "src/**/*.{ts,tsx}": [
+    "src/**/*.{ts,tsx,js,jsx}": [
       "eslint --fix"
     ],
     "package.json": [
@@ -42,7 +42,8 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react": "^7.34.3",
-    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "postcss": "^8.4.47",
