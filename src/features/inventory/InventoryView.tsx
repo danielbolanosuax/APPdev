@@ -20,9 +20,12 @@ import {
   Tag,
   ArrowRightLeft,
   Info,
+  Camera,
+  X,
 } from "lucide-react";
 import { useStore, selectors, InventoryItem, Location, Category } from "../../state/store";
 
+/* ====== Constantes UI ====== */
 const LOCS: Location[] = ["Pantry", "Fridge", "Freezer"];
 const UNITS = ["units", "kg", "g", "L", "ml", "packs"] as const;
 
@@ -30,13 +33,9 @@ type SortKey = "az" | "qty" | "status";
 type GroupKey = "location" | "category";
 type FilterKey = "all" | "fridge" | "freezer" | "pantry" | "expiring";
 
-type ScanInfo = {
-  name: string;
-  calories?: number;
-  nutriScore?: string;
-  barcode?: string;
-};
+type ScanInfo = { name: string; calories?: number; nutriScore?: string; barcode?: string };
 
+/* ====== Helpers ====== */
 function statusTone(s: string): "ok" | "warn" | "neutral" {
   const t = (s || "").toLowerCase();
   if (t.includes("expire")) return "warn";
@@ -44,48 +43,7 @@ function statusTone(s: string): "ok" | "warn" | "neutral" {
   return "neutral";
 }
 
-function useDebouncedValue<T>(value: T, delayMs = 180) {
-  const [v, setV] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setV(value), delayMs);
-    return () => clearTimeout(t);
-  }, [value, delayMs]);
-  return v;
-}
-
-function useStateWithStorage<T>(key: string, initial: T) {
-  const [state, setState] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : initial;
-    } catch {
-      return initial;
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(state));
-    } catch {
-      /* ignore */
-    }
-  }, [key, state]);
-  return [state, setState] as const;
-}
-
-type ToastKind = "success" | "error" | "info";
-type Toast = { id: number; kind: ToastKind; text: string };
-function useToasts() {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const idRef = useRef(1);
-  const add = useCallback((kind: ToastKind, text: string) => {
-    const id = idRef.current++;
-    setToasts((t) => [...t, { id, kind, text }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000);
-  }, []);
-  return { toasts, add };
-}
-
-/** Tipado mínimo del BarcodeDetector */
+/* ====== BarcodeDetector types mínimos ====== */
 type DetectorCtor = new (opts: { formats: string[] }) => {
   detect: (source: CanvasImageSource) => Promise<Array<{ rawValue: string }>>;
 };
@@ -95,52 +53,34 @@ declare global {
   }
 }
 
+/* ====== Componente ====== */
 export default function InventoryView() {
+  // Store
   const items = useStore(selectors.items);
   const addItem = useStore((s) => s.addItem);
   const updateItem = useStore((s) => s.updateItem);
   const removeItem = useStore((s) => s.removeItem);
 
-  const { toasts, add: addToast } = useToasts();
-  const liveRef = useRef<HTMLDivElement | null>(null);
+  // UI state
+  const [query, setQuery] = useState("");
+  const [filterKey, setFilterKey] = useState<FilterKey>("all");
+  const [groupBy, setGroupBy] = useState<GroupKey>("location");
+  const [sortBy, setSortBy] = useState<SortKey>("az");
 
-  const [query, setQuery] = useStateWithStorage<string>("inv.query", "");
-  const [filterKey, setFilterKey] = useStateWithStorage<FilterKey>("inv.filter", "all");
-  const [groupBy, setGroupBy] = useStateWithStorage<GroupKey>("inv.groupBy", "location");
-  const [sortBy, setSortBy] = useStateWithStorage<SortKey>("inv.sortBy", "az");
-
+  // Quick add
   const [addName, setAddName] = useState("");
   const [addQty, setAddQty] = useState<number>(1);
   const [addUnit, setAddUnit] = useState<string>("units");
   const [addLoc, setAddLoc] = useState<Location>("Pantry");
 
+  // Scanner
   const [showScanner, setShowScanner] = useState(false);
   const [scanInfo, setScanInfo] = useState<ScanInfo | null>(null);
 
-  const searchId = useId();
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
-        e.preventDefault();
-        const el = document.getElementById(searchId) as HTMLInputElement | null;
-        el?.focus();
-      } else if (e.key.toLowerCase() === "s") {
-        setShowScanner(true);
-      } else if (e.key.toLowerCase() === "g") {
-        handleGenerateRecipes();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const debouncedQuery = useDebouncedValue(query, 150);
-  const deferredQuery = useDeferredValue(debouncedQuery);
-
+  /* ============== Derived ============== */
+  const debouncedQuery = useDeferredValue(query);
   const filtered = useMemo(() => {
-    const q = (deferredQuery || "").toLowerCase().trim();
+    const q = (debouncedQuery || "").toLowerCase().trim();
     return items
       .filter((it) => {
         const byFilter =
@@ -162,130 +102,86 @@ export default function InventoryView() {
         if (sortBy === "status") return a.status.localeCompare(b.status);
         return 0;
       });
-  }, [items, deferredQuery, filterKey, sortBy]);
+  }, [items, debouncedQuery, filterKey, sortBy]);
 
   const groups = useMemo(() => {
     const map = new Map<string, InventoryItem[]>();
-    for (const it of filtered) {
+    filtered.forEach((it) => {
       const key = groupBy === "location" ? it.location : it.category || "Uncategorized";
       const list = map.get(key) || [];
       list.push(it);
       map.set(key, list);
-    }
+    });
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([k, arr]) => [k, arr.sort((a, b) => a.baseName.localeCompare(b.baseName))] as const);
   }, [filtered, groupBy]);
 
-  const addQuick = useCallback(
-    (e?: React.FormEvent) => {
-      e?.preventDefault();
-      const name = addName.trim();
-      const qty = Number.isFinite(addQty) ? Math.max(0, addQty) : 0;
-      if (!name || qty <= 0) {
-        addToast("error", "Nombre y cantidad válidos son requeridos.");
+  /* ============== Actions ============== */
+  const addQuick = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!addName.trim() || addQty <= 0) return;
+    addItem({ baseName: addName.trim(), qty: addQty, unit: addUnit, location: addLoc });
+    setAddName("");
+    setAddQty(1);
+    setAddUnit("units");
+    setAddLoc("Pantry");
+    setScanInfo(null);
+  };
+
+  const stepQty = (id: string, delta: number) => {
+    const it = items.find((i) => i.id === id);
+    if (!it) return;
+    const next = Math.max(0, (it.qty || 0) + delta);
+    updateItem(id, { qty: next });
+  };
+
+  const moveTo = (it: InventoryItem, loc: Location) => {
+    removeItem(it.id);
+    addItem({ baseName: it.baseName, qty: it.qty, unit: it.unit, location: loc });
+  };
+
+  /* ============== Scan ============== */
+  const handleScan = useCallback(async (barcode: string) => {
+    setShowScanner(false);
+    const code = String(barcode || "").trim();
+    if (!code) return;
+    try {
+      const res = await fetch(
+        `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(code)}.json`,
+      );
+      const data = await res.json();
+      if (data.status !== 1) {
+        alert("Producto no encontrado.");
         return;
       }
-      addItem({ baseName: name, qty, unit: addUnit, location: addLoc });
-      setAddName("");
+      const product = data.product;
+      const name: string =
+        product.product_name || product.generic_name || product.brands || "Producto desconocido";
+      let calories: number | undefined;
+      const n = product.nutriments || {};
+      if (typeof n["energy-kcal_100g"] === "number") calories = n["energy-kcal_100g"];
+      else if (typeof n["energy_100g"] === "number")
+        calories = Math.round(n["energy_100g"] / 4.184);
+      const nutri = (
+        product.nutrition_grade_fr ||
+        product.nutrition_grades ||
+        product.nutrition_grade ||
+        ""
+      )?.toUpperCase();
+
+      setAddName(name);
       setAddQty(1);
       setAddUnit("units");
       setAddLoc("Pantry");
-      setScanInfo(null);
-      addToast("success", "Elemento añadido.");
-    },
-    [addName, addQty, addUnit, addLoc, addItem, addToast],
-  );
+      setScanInfo({ name, calories, nutriScore: nutri, barcode: code });
+    } catch {
+      alert("Hubo un error al buscar el producto.");
+    }
+  }, []);
 
-  const stepQty = useCallback(
-    (id: string, delta: number) => {
-      const it = items.find((i) => i.id === id);
-      if (!it) return;
-      const next = Math.max(0, (it.qty || 0) + delta);
-      updateItem(id, { qty: next });
-    },
-    [items, updateItem],
-  );
-
-  const moveTo = useCallback(
-    (it: InventoryItem, loc: Location) => {
-      removeItem(it.id);
-      addItem({ baseName: it.baseName, qty: it.qty, unit: it.unit, location: loc });
-      addToast("info", `Movido a ${loc}.`);
-    },
-    [addItem, removeItem, addToast],
-  );
-
-  const handleScan = useCallback(
-    async (barcode: string) => {
-      setShowScanner(false);
-      const code = String(barcode || "").trim();
-      if (!code) return;
-
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-
-      try {
-        const res = await fetch(
-          `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(code)}.json`,
-          { signal: ctrl.signal },
-        );
-        clearTimeout(timer);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.status !== 1) {
-          addToast("error", "Producto no encontrado.");
-          return;
-        }
-        const product = data.product;
-        const name: string =
-          product.product_name || product.generic_name || product.brands || "Producto desconocido";
-        let calories: number | undefined;
-        const n = product.nutriments || {};
-        if (typeof n["energy-kcal_100g"] === "number") calories = n["energy-kcal_100g"];
-        else if (typeof n["energy_100g"] === "number")
-          calories = Math.round(n["energy_100g"] / 4.184);
-        const rawGrade: string | undefined =
-          product.nutrition_grade_fr ||
-          product.nutrition_grades ||
-          product.nutrition_grade ||
-          undefined;
-
-        setAddName(name);
-        setAddQty(1);
-        setAddUnit("units");
-        setAddLoc("Pantry");
-        setScanInfo({
-          name,
-          calories,
-          nutriScore: rawGrade ? String(rawGrade).toUpperCase() : undefined,
-          barcode: code,
-        });
-        addToast("success", "Producto detectado. Revisa el Quick Add.");
-      } catch (err: unknown) {
-        clearTimeout(timer);
-        const isAbort = (err as { name?: string })?.name === "AbortError";
-        addToast(
-          "error",
-          isAbort ? "Tiempo de espera agotado." : "Error al consultar OpenFoodFacts.",
-        );
-      }
-    },
-    [addToast],
-  );
-
-  const handleGenerateRecipes = useCallback(() => {
-    const names = items.map((i) => i.baseName.toLowerCase());
-    const ideas: string[] = [];
-    if (names.some((n) => /tomate|tomato/.test(n)) && names.some((n) => /pasta/.test(n)))
-      ideas.push("Pasta con tomate y hierbas.");
-    if (names.some((n) => /arroz|rice/.test(n)) && names.some((n) => /pollo|chicken/.test(n)))
-      ideas.push("Arroz con pollo sencillo.");
-    if (names.some((n) => /huevo|egg/.test(n)) && names.some((n) => /patata|potato/.test(n)))
-      ideas.push("Tortilla de patatas.");
-    if (ideas.length === 0) ideas.push("Sopa/Salteado con lo que tengas a mano.");
-    alert("Ideas rápidas:\n• " + ideas.join("\n• "));
-  }, [items]);
+  /* ============== Render ============== */
+  const searchId = useId();
 
   return (
     <section className="inventory-wrap">
@@ -309,7 +205,7 @@ export default function InventoryView() {
           <input
             id={searchId}
             className="search-input"
-            placeholder="Search items…  (atajos: / buscar, s escanear, g recetas)"
+            placeholder="Search items…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             aria-label="Search inventory"
@@ -369,12 +265,7 @@ export default function InventoryView() {
             onClick={() => setShowScanner(true)}
             type="button"
           >
-            Escanear
-          </button>
-        </div>
-        <div className="tool">
-          <button className="sp-btn sp-btn-ghost" onClick={handleGenerateRecipes} type="button">
-            Generar recetas
+            <Camera className="w-4 h-4" /> Escanear
           </button>
         </div>
       </div>
@@ -391,10 +282,8 @@ export default function InventoryView() {
           type="number"
           min={1}
           className="input"
-          value={Number.isFinite(addQty) ? addQty : 1}
-          onChange={(e) =>
-            setAddQty(Number.isNaN(parseFloat(e.target.value)) ? 1 : parseFloat(e.target.value))
-          }
+          value={addQty}
+          onChange={(e) => setAddQty(parseFloat(e.target.value || "1"))}
         />
         <select className="select" value={addUnit} onChange={(e) => setAddUnit(e.target.value)}>
           {UNITS.map((u) => (
@@ -413,33 +302,16 @@ export default function InventoryView() {
         <button className="sp-btn sp-btn-primary" type="submit">
           <PlusCircle className="w-4 h-4" /> Add
         </button>
-        <button
-          className="sp-btn sp-btn-secondary"
-          type="button"
-          onClick={() => setShowScanner(true)}
-          aria-label="Scan barcode"
-        >
-          Escanear
-        </button>
       </form>
 
-      {/* Info nutricional */}
+      {/* Info nutricional (bonito, sin inline) */}
       {scanInfo && (
-        <div
-          className="group-card"
-          style={{
-            marginTop: "0.5rem",
-            padding: "0.5rem 0.75rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-          }}
-        >
+        <div className="group-card inv-scan">
           <Info className="w-4 h-4" />
           <div className="gh-title">
             Detectado: <b>{scanInfo.name}</b>
           </div>
-          <div className="gh-meta" style={{ display: "flex", gap: "0.75rem" }}>
+          <div className="gh-meta inv-scan-meta">
             {typeof scanInfo.calories === "number" && (
               <span className="chip">≈ {scanInfo.calories} kcal/100g</span>
             )}
@@ -448,15 +320,13 @@ export default function InventoryView() {
             )}
             {scanInfo.barcode && <span className="chip">EAN: {scanInfo.barcode}</span>}
           </div>
-          <div style={{ marginLeft: "auto" }}>
-            <button className="sp-btn sp-btn-ghost" onClick={() => setScanInfo(null)}>
-              Ocultar
-            </button>
-          </div>
+          <button className="sp-btn sp-btn-ghost ml-auto" onClick={() => setScanInfo(null)}>
+            Ocultar
+          </button>
         </div>
       )}
 
-      {/* Listado */}
+      {/* Groups */}
       <div className="space-y-4">
         {groups.map(([key, arr]) => {
           const totalQty = arr.reduce((s, x) => s + (x.qty || 0), 0);
@@ -477,7 +347,7 @@ export default function InventoryView() {
                 </div>
               </div>
 
-              <ul className="divide-y border-subtle/50" role="list" aria-label={`Items in ${key}`}>
+              <ul className="divide-y border-subtle/50">
                 {arr.map((it) => (
                   <Row
                     key={it.id}
@@ -503,79 +373,33 @@ export default function InventoryView() {
         )}
       </div>
 
-      {/* Overlay escáner */}
+      {/* Overlay del escáner (DS) */}
       {showScanner && (
-        <div
-          className="scanner-overlay"
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "grid",
-            placeItems: "center",
-            zIndex: 50,
-          }}
-        >
-          <div
-            className="scanner-card"
-            style={{
-              background: "white",
-              width: "min(680px, 92vw)",
-              padding: "1rem",
-              borderRadius: "0.75rem",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-            }}
-          >
-            <h4 style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Escanear código de barras</h4>
-            <p className="eyebrow" style={{ marginBottom: "0.75rem" }}>
-              Si tu navegador no soporta cámara, usa entrada manual.
-            </p>
+        <div className="sp-overlay" role="dialog" aria-modal="true">
+          <div className="sp-modal">
+            <div className="modal-head">
+              <h4 className="modal-title">
+                <Camera className="w-4 h-4" /> Escanear código
+              </h4>
+              <button
+                className="btn-icon"
+                onClick={() => setShowScanner(false)}
+                aria-label="Cerrar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="eyebrow">Si la cámara no está disponible, pega el código manualmente.</p>
             <BarcodeScanner onScan={handleScan} onCancel={() => setShowScanner(false)} />
           </div>
         </div>
       )}
-
-      {/* Toasts */}
-      <div
-        style={{ position: "fixed", right: 12, bottom: 12, display: "grid", gap: 8, zIndex: 60 }}
-        aria-live="polite"
-      >
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className="toast"
-            style={{
-              padding: "8px 12px",
-              borderRadius: 10,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-              background:
-                t.kind === "success" ? "#e6fffa" : t.kind === "error" ? "#ffe6e6" : "#eef2ff",
-            }}
-          >
-            {t.text}
-          </div>
-        ))}
-      </div>
-
-      {/* Live region */}
-      <div
-        ref={liveRef}
-        aria-live="polite"
-        style={{
-          position: "absolute",
-          width: 1,
-          height: 1,
-          overflow: "hidden",
-          clip: "rect(1px, 1px, 1px, 1px)",
-        }}
-      />
     </section>
   );
 }
 
-const Row = React.memo(function Row({
+/* ========= Row ========= */
+function Row({
   it,
   onDec,
   onInc,
@@ -595,9 +419,7 @@ const Row = React.memo(function Row({
         <button className="btn-icon" onClick={onDec} aria-label="Decrease">
           <Minus className="w-4 h-4" />
         </button>
-        <span className="qty">
-          {Number.isInteger(it.qty) ? it.qty : (it.qty as number).toFixed(1)}
-        </span>
+        <span className="qty">{Number.isInteger(it.qty) ? it.qty : it.qty.toFixed(1)}</span>
         <button className="btn-icon" onClick={onInc} aria-label="Increase">
           <Plus className="w-4 h-4" />
         </button>
@@ -633,26 +455,9 @@ const Row = React.memo(function Row({
       </div>
     </li>
   );
-}, areEqualRow);
-
-function areEqualRow(
-  prev: Readonly<React.ComponentProps<typeof Row>>,
-  next: Readonly<React.ComponentProps<typeof Row>>,
-) {
-  const a = prev.it;
-  const b = next.it;
-  return (
-    a.id === b.id &&
-    a.qty === b.qty &&
-    a.location === b.location &&
-    a.unit === b.unit &&
-    a.baseName === b.baseName &&
-    a.status === b.status &&
-    a.category === b.category
-  );
 }
 
-/* ====== BarcodeScanner ====== */
+/* ====== BarcodeScanner (estilado) ====== */
 function BarcodeScanner({
   onScan,
   onCancel,
@@ -704,7 +509,7 @@ function BarcodeScanner({
           startDetectLoop();
         }
       } catch (e) {
-        const name = (e as { name?: string }).name;
+        const name = (e as { name?: string })?.name;
         setError(
           name === "NotAllowedError"
             ? "Permiso de cámara denegado."
@@ -720,6 +525,7 @@ function BarcodeScanner({
       cancelled = true;
       stopAll();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function stopAll() {
@@ -765,58 +571,38 @@ function BarcodeScanner({
   }
 
   return (
-    <div>
+    <div className="scanner">
       {supported ? (
-        <div style={{ display: "grid", gap: "0.5rem" }}>
-          <div style={{ position: "relative", overflow: "hidden", borderRadius: "0.5rem" }}>
+        <>
+          <div className="scanner-video">
             <video
               ref={videoRef}
-              style={{
-                width: "100%",
-                background: "#000",
-                maxHeight: 360,
-                objectFit: "cover",
-                display: loading ? "none" : "block",
-              }}
+              className={`scanner-live ${loading ? "hide" : ""}`}
               muted
               playsInline
             />
-            {loading && (
-              <div
-                style={{
-                  height: 200,
-                  display: "grid",
-                  placeItems: "center",
-                  background: "#111",
-                  color: "#fff",
-                }}
-              >
-                Iniciando cámara…
-              </div>
-            )}
+            {loading && <div className="scanner-skeleton">Iniciando cámara…</div>}
           </div>
-          <canvas ref={canvasRef} style={{ display: "none" }} />
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+          <canvas ref={canvasRef} className="scanner-canvas" />
+          <div className="modal-actions">
             <button className="sp-btn sp-btn-ghost" onClick={() => onCancel?.()}>
               Cancelar
             </button>
           </div>
-          {error && (
-            <div className="eyebrow" style={{ color: "#b00" }}>
-              {error}
-            </div>
-          )}
-        </div>
+          {error && <div className="scanner-error">{error}</div>}
+        </>
       ) : (
-        <div style={{ display: "grid", gap: "0.5rem" }}>
-          <input
-            className="input"
-            inputMode="numeric"
-            placeholder="Pega el código de barras (EAN/UPC)"
-            value={manualCode}
-            onChange={(e) => setManualCode(e.target.value)}
-          />
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+        <>
+          <div className="tool">
+            <input
+              className="input"
+              inputMode="numeric"
+              placeholder="Pega el código de barras (EAN/UPC)"
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+            />
+          </div>
+          <div className="modal-actions">
             <button
               className="sp-btn sp-btn-primary"
               onClick={() => onScan(manualCode.trim())}
@@ -828,17 +614,13 @@ function BarcodeScanner({
               Cancelar
             </button>
           </div>
-          {error && (
-            <div className="eyebrow" style={{ color: "#b00" }}>
-              {error}
-            </div>
-          )}
+          {error && <div className="scanner-error">{error}</div>}
           {!error && (
-            <div className="eyebrow" style={{ opacity: 0.8 }}>
+            <div className="eyebrow">
               Tu navegador no soporta lector en cámara; usando entrada manual.
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
