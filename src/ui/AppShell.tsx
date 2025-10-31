@@ -1,5 +1,12 @@
 import React from "react";
-import { LayoutGrid, Search, Settings } from "lucide-react";
+import {
+  Boxes,
+  ChefHat,
+  ShoppingBasket,
+  BarChart3,
+  Settings,
+  Search as SearchIcon,
+} from "lucide-react";
 
 type Tab = "inventory" | "recipes" | "shopping" | "analytics" | "settings";
 
@@ -11,6 +18,13 @@ type Props = {
   children: React.ReactNode;
 };
 
+const TABS: { key: Tab; label: string; Icon: React.ComponentType<any> }[] = [
+  { key: "inventory", label: "Inventory", Icon: Boxes },
+  { key: "recipes", label: "Recipes", Icon: ChefHat },
+  { key: "shopping", label: "Shopping", Icon: ShoppingBasket },
+  { key: "analytics", label: "Analytics", Icon: BarChart3 },
+];
+
 export default function AppShell({
   activeTab,
   setActiveTab,
@@ -20,14 +34,17 @@ export default function AppShell({
 }: Props) {
   return (
     <div className="app-shell">
-      <header className="appbar">
-        <div className="left">
-          <LayoutGrid className="w-5 h-5" />
-          <span className="brand">SmartPantry AI</span>
+      <header className="appbar surface border-subtle">
+        <div className="appbar-left">
+          <span className="brand-dot" />
+          <span className="brand">
+            SmartPantry <b>AI</b>
+          </span>
         </div>
-        <div className="center">
+
+        <div className="appbar-center">
           <div className="tool search">
-            <Search className="tool-icon" />
+            <SearchIcon className="tool-icon" />
             <input
               value={globalSearch}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalSearch(e.target.value)}
@@ -37,10 +54,12 @@ export default function AppShell({
             />
           </div>
         </div>
-        <div className="right">
+
+        <div className="appbar-right">
           <button
             className={`tab ${activeTab === "settings" ? "on" : ""}`}
             onClick={() => setActiveTab("settings")}
+            title="Settings"
             aria-label="Settings"
           >
             <Settings className="w-5 h-5" />
@@ -49,13 +68,15 @@ export default function AppShell({
       </header>
 
       <nav className="tabs">
-        {(["inventory", "recipes", "shopping", "analytics"] as Tab[]).map((t) => (
+        {TABS.map(({ key, label, Icon }) => (
           <button
-            key={t}
-            className={`tab ${activeTab === t ? "on" : ""}`}
-            onClick={() => setActiveTab(t)}
+            key={key}
+            className={`tab ${activeTab === key ? "on" : ""}`}
+            onClick={() => setActiveTab(key)}
+            aria-current={activeTab === key ? "page" : undefined}
           >
-            {t}
+            <Icon className="w-4 h-4" />
+            <span>{label}</span>
           </button>
         ))}
       </nav>
