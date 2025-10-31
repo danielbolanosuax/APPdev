@@ -638,51 +638,316 @@ body {
 /* FILE: src/styles.css — añade al final (mejora Analytics PRO) */
 
 /* Containers */
-.analytics-pro { display:grid; gap:12px; }
-.kpis-grid{
-  display:grid;
+.analytics-pro {
+  display: grid;
+  gap: 12px;
+}
+.kpis-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap:12px;
+  gap: 12px;
 }
-.analytics-pro-grid{
-  display:grid;
+.analytics-pro-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap:12px;
+  gap: 12px;
 }
-.lists-pro{ display:grid; gap:12px; }
+.lists-pro {
+  display: grid;
+  gap: 12px;
+}
 
 /* KPI PRO */
-.card-metric{
-  background:var(--surface-1);
-  border:1px solid #e7edf5;
-  border-radius:16px;
-  box-shadow:var(--shadow-soft);
-  padding:12px;
-  display:grid; grid-template-rows:auto 1fr auto; gap:6px;
+.card-metric {
+  background: var(--surface-1);
+  border: 1px solid #e7edf5;
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  padding: 12px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 6px;
 }
-.metric-head{ display:flex; align-items:center; gap:.6rem; }
-.metric-title{ font-weight:800; color:var(--muted); }
-.metric-body{ display:grid; gap:2px; }
-.metric-value{ font-size:28px; font-weight:900; color:var(--text); line-height:1.05; }
-.metric-note{ font-size:12px; color:var(--muted); }
-.metric-trend{
-  display:flex; align-items:center; justify-content:space-between;
-  color:var(--brand);
+.metric-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
-.card-metric.trend-down .metric-trend{ color: var(--danger); }
-.kpi-with-spark{ display:grid; grid-template-rows:auto auto; }
-.spark-wrap{ color:currentColor; }
+.metric-title {
+  font-weight: 800;
+  color: var(--muted);
+}
+.metric-body {
+  display: grid;
+  gap: 2px;
+}
+.metric-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.05;
+}
+.metric-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.metric-trend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--brand);
+}
+.card-metric.trend-down .metric-trend {
+  color: var(--danger);
+}
+.kpi-with-spark {
+  display: grid;
+  grid-template-rows: auto auto;
+}
+.spark-wrap {
+  color: currentColor;
+}
 
 /* Status list */
-.status-list{ display:grid; gap:10px; }
-.status-row{ display:flex; justify-content:space-between; align-items:center; font-weight:700; }
-.status-label{ color:var(--text); }
-.status-val{ font-size:12px; color:var(--muted); }
-.status-bar{ height:8px; border-radius:999px; background:var(--surface-2); border:1px solid #e6ebf2; overflow:hidden; }
-.status-fill{ height:100%; border-radius:999px; }
+.status-list {
+  display: grid;
+  gap: 10px;
+}
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+.status-label {
+  color: var(--text);
+}
+.status-val {
+  font-size: 12px;
+  color: var(--muted);
+}
+.status-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid #e6ebf2;
+  overflow: hidden;
+}
+.status-fill {
+  height: 100%;
+  border-radius: 999px;
+}
 
 /* Sparkline look */
-.sparkline{ display:block; }
+.sparkline {
+  display: block;
+}
 
 /* Minor polish */
-.card-pro .empty-card{ background:var(--surface-2); }
+.card-pro .empty-card {
+  background: var(--surface-2);
+}
+
+/* === THEME POLISH — LESS WHITE + DARK — paste at END of src/styles.css === */
+
+/* ---------- Light tune (menos blanco, mejor contraste) ---------- */
+:root,
+:root.light {
+  --bg: #f6f8fb; /* antes muy blanco */
+  --bg-2: #eef2f7;
+  --text: #111827; /* gris muy oscuro en vez de negro puro */
+  --muted: #64748b; /* slate-500 */
+
+  --surface-1: #ffffff; /* card */
+  --surface-2: #f7f9fc; /* inputs, pills */
+  --surface-3: #eef3f8;
+
+  --brand: #16a34a;
+  --brand-600: #15803d;
+  --brand-700: #166534;
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+
+  --ring: 22 163 74;
+
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --shadow-soft: 0 8px 24px rgba(2, 6, 23, 0.08);
+  --shadow-elev: 0 28px 60px rgba(2, 6, 23, 0.12);
+
+  --border-strong: #d7dee7;
+  --border-subtle: #e6ecf3;
+
+  --tint-25: color-mix(in oklab, var(--brand) 12%, #fff);
+  --tint-12: color-mix(in oklab, var(--brand) 6%, #fff);
+}
+
+/* ---------- Dark tune (mejor noche) ---------- */
+:root.dark {
+  --bg: #0b0f14;
+  --bg-2: #0e131b;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+
+  --surface-1: #101722;
+  --surface-2: #0f1620;
+  --surface-3: #0c121b;
+
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.35);
+  --shadow-elev: 0 40px 80px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Fondo de página más “pro” ---------- */
+body {
+  background:
+    radial-gradient(
+      900px 520px at -10% -15%,
+      color-mix(in oklab, var(--brand) 12%, transparent) 0,
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--bg) 0, var(--bg-2) 100%);
+}
+.dark body {
+  background:
+    radial-gradient(
+      900px 520px at -10% -15%,
+      color-mix(in oklab, var(--brand) 16%, transparent) 0,
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--bg) 0, var(--bg-2) 100%);
+}
+
+/* ---------- Cards, inputs y elementos básicos ---------- */
+.card-pro,
+.stat,
+.empty-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.35) 100%),
+    var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+}
+.dark .card-pro,
+.dark .stat,
+.dark .empty-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%),
+    var(--surface-1);
+}
+
+.input,
+.select,
+.search-input,
+.btn-icon,
+.sp-btn-ghost {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+}
+.pill,
+.chip,
+.badge {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ---------- Botones primarios con gradiente sutil ---------- */
+.sp-btn-primary {
+  background: linear-gradient(180deg, #34d399 0%, var(--brand) 100%);
+  color: #062411;
+  box-shadow: 0 18px 40px rgba(22, 163, 74, 0.28);
+}
+
+/* ---------- AppShell y layout ---------- */
+.app-header-pro {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 100%),
+    var(--surface-1);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(6px) saturate(140%);
+}
+.nav-rail {
+  background: var(--surface-1);
+  border-right: 1px solid var(--border-subtle);
+}
+.app-main {
+  max-width: 1200px;
+}
+
+/* ---------- Analytics: visual polish ---------- */
+.kpis-grid .card-metric {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.55) 100%),
+    var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+}
+.card-metric .metric-value {
+  font-size: 30px;
+}
+
+.donut-hole {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%),
+    var(--surface-1);
+  border: 1px solid var(--border-subtle);
+}
+.bar-fill {
+  background: linear-gradient(
+    180deg,
+    var(--brand) 0%,
+    color-mix(in oklab, var(--brand) 55%, #0b1220) 100%
+  );
+  box-shadow: 0 8px 16px rgba(2, 6, 23, 0.08) inset;
+}
+
+/* ---------- Status mix barras ---------- */
+.status-bar {
+  height: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-2);
+}
+.status-fill {
+  border-radius: 999px;
+}
+
+/* ---------- Chips seleccionados (seg-group) ---------- */
+.seg-group {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+}
+.seg[aria-checked="true"] {
+  background: var(--tint-25);
+  color: #062411;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.18);
+}
+
+/* ---------- Tabs/bottom nav legibles en dark ---------- */
+.dark .bottom-nav-pro,
+.dark .nav-rail-btn {
+  background: var(--surface-2);
+}
+
+/* ---------- Tables/listas de riesgo ---------- */
+.risk li {
+  border-color: var(--border-subtle);
+  background: var(--surface-2);
+}
+
+/* ---------- Extras de contraste ---------- */
+.legend-val,
+.stat-note,
+.eyebrow {
+  color: var(--muted);
+}
+.divider {
+  background: var(--border-subtle);
+}
