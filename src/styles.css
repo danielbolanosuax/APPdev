@@ -634,3 +634,55 @@ body {
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* FILE: src/styles.css — añade al final (mejora Analytics PRO) */
+
+/* Containers */
+.analytics-pro { display:grid; gap:12px; }
+.kpis-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap:12px;
+}
+.analytics-pro-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap:12px;
+}
+.lists-pro{ display:grid; gap:12px; }
+
+/* KPI PRO */
+.card-metric{
+  background:var(--surface-1);
+  border:1px solid #e7edf5;
+  border-radius:16px;
+  box-shadow:var(--shadow-soft);
+  padding:12px;
+  display:grid; grid-template-rows:auto 1fr auto; gap:6px;
+}
+.metric-head{ display:flex; align-items:center; gap:.6rem; }
+.metric-title{ font-weight:800; color:var(--muted); }
+.metric-body{ display:grid; gap:2px; }
+.metric-value{ font-size:28px; font-weight:900; color:var(--text); line-height:1.05; }
+.metric-note{ font-size:12px; color:var(--muted); }
+.metric-trend{
+  display:flex; align-items:center; justify-content:space-between;
+  color:var(--brand);
+}
+.card-metric.trend-down .metric-trend{ color: var(--danger); }
+.kpi-with-spark{ display:grid; grid-template-rows:auto auto; }
+.spark-wrap{ color:currentColor; }
+
+/* Status list */
+.status-list{ display:grid; gap:10px; }
+.status-row{ display:flex; justify-content:space-between; align-items:center; font-weight:700; }
+.status-label{ color:var(--text); }
+.status-val{ font-size:12px; color:var(--muted); }
+.status-bar{ height:8px; border-radius:999px; background:var(--surface-2); border:1px solid #e6ebf2; overflow:hidden; }
+.status-fill{ height:100%; border-radius:999px; }
+
+/* Sparkline look */
+.sparkline{ display:block; }
+
+/* Minor polish */
+.card-pro .empty-card{ background:var(--surface-2); }
