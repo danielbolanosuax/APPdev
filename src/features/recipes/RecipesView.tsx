@@ -1,456 +1,106 @@
-import React, { useMemo, useState } from "react";
-import {
-  ChefHat,
-  Search,
-  Star,
-  Heart,
-  HeartOff,
-  Timer,
-  SlidersHorizontal,
-  ListChecks,
-  ShoppingBasket,
-  SortAsc,
-} from "lucide-react";
-import { useStore, selectors, normalize, Location } from "../../state/store";
+﻿import { useState, useEffect } from "react";
+import { api } from "../../services/api";
 
-/* ===== Tipos ===== */
-export type Recipe = {
+interface Recipe {
+  id: number;
   name: string;
-  ingredients: string;
-  uses: Record<string, number>;
-  time: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  rating: number;
-  tags: string[];
-  steps?: string[];
-  allergens?: string[];
-};
+  ingredients: string[];
+  instructions: string[];
+  prep_time: number;
+  difficulty: string;
+  match_percentage?: number;
+}
 
-type StoreExtras = {
-  recipeOutput?: string | null;
-  setRecipeOutput?: (v: string | null) => void;
-};
-
-/* ===== Data base ===== */
-const BASE_RECIPES: Recipe[] = [
-  {
-    name: "Tomato Pasta",
-    ingredients: "Tomatoes, Pasta, Olive Oil",
-    difficulty: "Easy",
-    time: "20 min",
-    rating: 4.5,
-    tags: ["Vegetarian", "Quick"],
-    uses: { Tomatoes: 2, Pasta: 1, "Olive Oil": 15 },
-    steps: ["Boil pasta.", "Sauté tomatoes.", "Mix & serve."],
-  },
-  {
-    name: "Chicken & Rice Bowl",
-    ingredients: "Chicken, Rice, Olive Oil",
-    difficulty: "Medium",
-    time: "35 min",
-    rating: 4.8,
-    tags: ["High Protein"],
-    uses: { Chicken: 250, Rice: 0.25, "Olive Oil": 10 },
-    steps: ["Sear chicken.", "Cook rice.", "Assemble bowl."],
-  },
-  {
-    name: "Milk Pudding",
-    ingredients: "Milk, Rice, Sugar",
-    difficulty: "Easy",
-    time: "25 min",
-    rating: 4.2,
-    tags: ["Dessert"],
-    uses: { Milk: 0.3, Rice: 0.1, Sugar: 25 },
-    steps: ["Simmer rice in milk.", "Sweeten.", "Chill."],
-  },
-];
-
-/* ===== Helpers ===== */
-const parseMins = (s: string) => {
-  const m = /(\d+)\s*min/i.exec(s || "");
-  return m ? parseInt(m[1], 10) : 60;
-};
-const TIME_FILTERS: { k: "any" | "15" | "30" | "45" | "60"; label: string; max?: number }[] = [
-  { k: "any", label: "Any time" },
-  { k: "15", label: "≤ 15 min", max: 15 },
-  { k: "30", label: "≤ 30", max: 30 },
-  { k: "45", label: "≤ 45", max: 45 },
-  { k: "60", label: "> 45" },
-];
-
-/* ===== Router sin hooks condicionales ===== */
 export default function RecipesView() {
-  const recipeOutput = useStore((s) => (s as StoreExtras).recipeOutput ?? null);
-  const setRecipeOutput = useStore((s) => (s as StoreExtras).setRecipeOutput ?? (() => {}));
-  if (recipeOutput !== null) {
-    return <GeneratedRecipeView recipeOutput={recipeOutput} onBack={() => setRecipeOutput(null)} />;
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadRecipes();
+  }, []);
+
+  const loadRecipes = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getRecipes();
+      setRecipes(data);
+      setError(null);
+    } catch (err) {
+      setError("Error al cargar recetas");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="p-4">Cargando recetas...</div>;
   }
-  return <RecipesListView />;
-}
 
-/* ===== Vista receta generada ===== */
-function GeneratedRecipeView({
-  recipeOutput,
-  onBack,
-}: {
-  recipeOutput: string;
-  onBack: () => void;
-}) {
-  return (
-    <section className="recipes-wrap">
-      <div className="card-head">
-        <div className="card-title">
-          <span className="ringed">
-            <ChefHat className="w-4 h-4" />
-          </span>
-          <div>
-            <h3>Recipes</h3>
-            <p className="eyebrow">Generated recipe</p>
-          </div>
-        </div>
-      </div>
-
-      <button className="sp-btn sp-btn-ghost" onClick={onBack}>
-        Volver
-      </button>
-
-      <div
-        className="surface border-subtle rounded-2xl p-4 mt-3"
-        style={{ whiteSpace: "pre-wrap" }}
-      >
-        {recipeOutput}
-      </div>
-    </section>
-  );
-}
-
-/* ===== Vista lista de recetas ===== */
-function RecipesListView() {
-  const items = useStore(selectors.items);
-  const setItems = useStore((s) => s.setItems);
-  const addCook = useStore((s) => s.addCook);
-  const addRow = useStore((s) => s.addRow);
-  const toggleFavorite = useStore((s) => s.toggleFavorite);
-  const favorites = useStore(selectors.favoritesSet);
-
-  const [query, setQuery] = useState("");
-  const [onlyCookable, setOnlyCookable] = useState(false);
-  const [timeKey, setTimeKey] = useState<"any" | "15" | "30" | "45" | "60">("any");
-  const [levels, setLevels] = useState<Set<Recipe["difficulty"]>>(
-    () => new Set(["Easy", "Medium", "Hard"]),
-  );
-  const [sortBy, setSortBy] = useState<"score" | "time" | "name">("score");
-
-  const invMap = useMemo(() => {
-    const m = new Map<string, number>();
-    items.forEach((it) => m.set(normalize(it.baseName), it.qty));
-    return m;
-  }, [items]);
-
-  const q = normalize(query);
-
-  const scored = useMemo(() => {
-    let arr = BASE_RECIPES.map((r) => {
-      const req = Object.entries(r.uses || {});
-      const haveCount = req.filter(([k, v]) => (invMap.get(normalize(k)) ?? 0) >= v).length;
-      const scoreBase = (haveCount / Math.max(1, req.length)) * 100;
-      const timeBoost = parseMins(r.time) <= 20 ? 8 : 0;
-      const favBoost = favorites.has(r.name) ? 10 : 0;
-      return {
-        r,
-        haveCount,
-        missingCount: req.length - haveCount,
-        score: Math.round(scoreBase + timeBoost + favBoost),
-      };
-    });
-
-    if (onlyCookable) arr = arr.filter((x) => x.missingCount === 0);
-    if (timeKey !== "any") {
-      const conf = TIME_FILTERS.find((t) => t.k === timeKey)!;
-      if (conf.max !== undefined) arr = arr.filter((x) => parseMins(x.r.time) <= conf.max);
-      else arr = arr.filter((x) => parseMins(x.r.time) > 45);
-    }
-    if (levels.size !== 3) arr = arr.filter((x) => levels.has(x.r.difficulty));
-    if (q) {
-      arr = arr.filter(
-        (x) =>
-          normalize(x.r.name).includes(q) ||
-          normalize(x.r.ingredients).includes(q) ||
-          x.r.tags.some((t) => normalize(t).includes(q)),
-      );
-    }
-
-    arr = arr.sort((a, b) => {
-      if (sortBy === "score") return b.score - a.score;
-      if (sortBy === "time") return parseMins(a.r.time) - parseMins(b.r.time);
-      return a.r.name.localeCompare(b.r.name);
-    });
-
-    return arr;
-  }, [invMap, favorites, onlyCookable, timeKey, levels, q, sortBy]);
-
-  const cookNow = (r: Recipe, servings = 1) => {
-    const next = items.map((it) => ({ ...it }));
-    Object.entries(r.uses || {}).forEach(([base, amount]) => {
-      const idx = next.findIndex((i) => normalize(i.baseName) === normalize(base));
-      if (idx >= 0) {
-        const scaled = (amount as number) * servings;
-        next[idx].qty = Math.max(0, (next[idx].qty || 0) - scaled);
-        next[idx].name = `${next[idx].baseName} (${next[idx].qty} ${next[idx].unit})`;
-        next[idx].status = next[idx].qty === 0 ? "Used" : next[idx].status;
-      }
-    });
-    setItems(next);
-    addCook(r.name);
-    alert("Cooked!");
-  };
-
-  const addMissingToShopping = (names: string[]) => {
-    names.forEach((m) =>
-      addRow({ name: m, qty: 1, unit: "units", location: "Pantry" as Location, purchased: false }),
-    );
-    alert("Missing items added");
-  };
-
-  return (
-    <section className="recipes-wrap">
-      {/* Header */}
-      <div className="card-head">
-        <div className="card-title">
-          <span className="ringed">
-            <ChefHat className="w-4 h-4" />
-          </span>
-          <div>
-            <h3>Recipes</h3>
-            <p className="eyebrow">Smart suggestions based on your pantry</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Toolbar */}
-      <div className="recipes-toolbar">
-        <div className="tool search">
-          <Search className="tool-icon" />
-          <input
-            value={query}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
-            className="search-input"
-            placeholder="Search recipes…"
-            aria-label="Search recipes"
-          />
-        </div>
-
-        <label className="tool checkbox">
-          <input
-            type="checkbox"
-            checked={onlyCookable}
-            onChange={(e) => setOnlyCookable(e.target.checked)}
-          />
-          Cookable now
-        </label>
-
-        <div className="tool seg-group" role="tablist" aria-label="Time">
-          <Timer className="tool-icon" />
-          {TIME_FILTERS.map((t) => (
-            <button
-              key={t.k}
-              role="tab"
-              aria-checked={timeKey === t.k}
-              onClick={() => setTimeKey(t.k)}
-              className="seg"
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="tool seg-group" role="tablist" aria-label="Difficulty">
-          <SlidersHorizontal className="tool-icon" />
-          {(["Easy", "Medium", "Hard"] as const).map((d) => {
-            const on = levels.has(d);
-            return (
-              <button
-                key={d}
-                role="tab"
-                aria-checked={on}
-                onClick={() => {
-                  const s = new Set(levels);
-                  if (on) s.delete(d);
-                  else s.add(d);
-                  setLevels(s);
-                }}
-                className="seg"
-              >
-                {d}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="tool seg-group" role="tablist" aria-label="Sort">
-          <SortAsc className="tool-icon" />
-          {(["score", "time", "name"] as const).map((s) => (
-            <button
-              key={s}
-              role="tab"
-              aria-checked={sortBy === s}
-              onClick={() => setSortBy(s)}
-              className="seg"
-              title={`Sort by ${s}`}
-            >
-              {s.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* List */}
-      <div className="recipes-list">
-        {scored.map(({ r, score }) => {
-          const have = Object.keys(r.uses).filter(
-            (b) => (invMap.get(normalize(b)) ?? 0) >= (r.uses[b] || 0),
-          );
-          const missing = Object.keys(r.uses).filter((b) => !have.includes(b));
-          const fav = favorites.has(r.name);
-          return (
-            <RecipeCard
-              key={r.name}
-              r={r}
-              score={score}
-              have={have}
-              missing={missing}
-              fav={fav}
-              onToggleFav={() => toggleFavorite(r.name)}
-              onCook={(serv) => cookNow(r, serv)}
-              onAddMissing={() => addMissingToShopping(missing)}
-            />
-          );
-        })}
-
-        {scored.length === 0 && (
-          <div className="empty">
-            <div className="empty-card">
-              <div className="empty-title">No recipes match</div>
-              <p className="eyebrow">Try clearing filters or search.</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* ===== Card ===== */
-function RecipeCard({
-  r,
-  score,
-  have,
-  missing,
-  fav,
-  onToggleFav,
-  onCook,
-  onAddMissing,
-}: {
-  r: Recipe;
-  score: number;
-  have: string[];
-  missing: string[];
-  fav: boolean;
-  onToggleFav: () => void;
-  onCook: (servings: number) => void;
-  onAddMissing: () => void;
-}) {
-  const [servings, setServings] = useState(1);
-
-  return (
-    <article className="recipe-card">
-      <header className="rc-head">
-        <div className="rc-title">{r.name}</div>
-        <button className="btn-icon" onClick={onToggleFav} aria-label="Favorite">
-          {fav ? <HeartOff className="w-4 h-4" /> : <Heart className="w-4 h-4" />}
+  if (error) {
+    return (
+      <div className="p-4 text-red-600">
+        {error}
+        <button onClick={loadRecipes} className="ml-4 px-4 py-2 bg-blue-500 text-white rounded">
+          Reintentar
         </button>
-      </header>
+      </div>
+    );
+  }
 
-      <div className="rc-meta">
-        <span className="pill">
-          <Timer className="w-3 h-3" /> {r.time}
-        </span>
-        <span className="pill">{r.difficulty}</span>
-        <span className="pill">
-          <Star className="w-3 h-3" /> {r.rating.toFixed(1)}
-        </span>
-        <span className="pill score">SCORE {score}</span>
+  return (
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Recetas Sugeridas</h1>
+        <button
+          onClick={loadRecipes}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Actualizar
+        </button>
       </div>
 
-      <p className="eyebrow">
-        Ingredients: <b>{r.ingredients}</b>
-      </p>
+      {recipes.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">No hay recetas disponibles</div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {recipes.map((recipe) => (
+            <div
+              key={recipe.id}
+              className="border rounded-lg p-6 shadow hover:shadow-lg transition"
+            >
+              <h3 className="font-bold text-xl mb-2">{recipe.name}</h3>
 
-      <div className="rc-row">
-        <div>
-          <div className="eyebrow">Have</div>
-          <div className="chips">
-            {have.length ? (
-              have.map((x) => (
-                <span key={x} className="chip ok">
-                  {x}
-                </span>
-              ))
-            ) : (
-              <span className="chip">—</span>
-            )}
-          </div>
-        </div>
-        <div>
-          <div className="eyebrow">Missing</div>
-          <div className="chips">
-            {missing.length ? (
-              missing.map((x) => (
-                <span key={x} className="chip warn">
-                  {x}
-                </span>
-              ))
-            ) : (
-              <span className="chip">—</span>
-            )}
-          </div>
-        </div>
-      </div>
+              <div className="flex gap-4 text-sm text-gray-600 mb-4">
+                <span>⏱️ {recipe.prep_time} min</span>
+                <span>📊 {recipe.difficulty}</span>
+                {recipe.match_percentage && (
+                  <span className="text-green-600 font-semibold">
+                    {recipe.match_percentage}% match
+                  </span>
+                )}
+              </div>
 
-      <div className="rc-actions">
-        <div className="servings">
-          <button className="btn-icon" onClick={() => setServings(Math.max(1, servings - 1))}>
-            -
-          </button>
-          <span className="qty">{servings}x</span>
-          <button className="btn-icon" onClick={() => setServings(servings + 1)}>
-            +
-          </button>
-        </div>
-        <div className="rc-buttons">
-          <button
-            className="sp-btn sp-btn-ghost"
-            onClick={onAddMissing}
-            disabled={missing.length === 0}
-          >
-            <ShoppingBasket className="w-4 h-4" /> Add Missing
-          </button>
-          <button className="sp-btn sp-btn-primary" onClick={() => onCook(servings)}>
-            <ListChecks className="w-4 h-4" /> Cook now
-          </button>
-        </div>
-      </div>
+              <div className="mb-4">
+                <p className="font-semibold mb-2">Ingredientes:</p>
+                <ul className="list-disc list-inside text-sm space-y-1">
+                  {recipe.ingredients.slice(0, 5).map((ing, idx) => (
+                    <li key={idx}>{ing}</li>
+                  ))}
+                  {recipe.ingredients.length > 5 && (
+                    <li className="text-gray-500">+{recipe.ingredients.length - 5} más...</li>
+                  )}
+                </ul>
+              </div>
 
-      {!!r.steps?.length && (
-        <details className="rc-steps">
-          <summary>Steps</summary>
-          <ol>
-            {r.steps.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ol>
-        </details>
+              <button className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                Ver Receta Completa
+              </button>
+            </div>
+          ))}
+        </div>
       )}
-    </article>
+    </div>
   );
 }

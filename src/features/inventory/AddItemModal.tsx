@@ -1,107 +1,170 @@
-import React, { useEffect, useRef, useState } from "react";
-import { X, PlusCircle } from "lucide-react";
-import { Location } from "../../state/store";
+﻿import { useState } from "react";
+import { api } from "../../services/api";
 
-type Props = {
-  open: boolean;
+interface AddItemModalProps {
   onClose: () => void;
-  onSubmit: (args: {
-    baseName: string;
-    qty: number;
-    unit: string;
-    location: Location;
-  }) => void;
-};
+  onItemAdded: () => void;
+}
 
-const UNITS = ["units", "kg", "g", "L", "ml", "packs"] as const;
-const LOCS: Location[] = ["Pantry", "Fridge", "Freezer"];
+export default function AddItemModal({ onClose, onItemAdded }: AddItemModalProps) {
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "other",
+    quantity: 1,
+    unit: "unidad",
+    expiration_date: "",
+    barcode: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export default function AddItemModal({ open, onClose, onSubmit }: Props) {
-  const [name, setName] = useState("");
-  const [qty, setQty] = useState(1);
-  const [unit, setUnit] = useState<string>("units");
-  const [loc, setLoc] = useState<Location>("Pantry");
-  const first = useRef<HTMLInputElement>(null);
+  const categories = [
+    { value: "dairy", label: "Lácteos" },
+    { value: "vegetables", label: "Verduras" },
+    { value: "fruits", label: "Frutas" },
+    { value: "meat", label: "Carne" },
+    { value: "fish", label: "Pescado" },
+    { value: "grains", label: "Granos" },
+    { value: "beverages", label: "Bebidas" },
+    { value: "snacks", label: "Snacks" },
+    { value: "other", label: "Otro" },
+  ];
 
-  useEffect(() => {
-    if (open) {
-      setTimeout(() => first.current?.focus(), 0);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name.trim()) {
+      setError("El nombre es requerido");
+      return;
     }
-  }, [open]);
 
-  const submit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!name.trim() || qty <= 0) return;
-    onSubmit({ baseName: name.trim(), qty, unit, location: loc });
-    setName(""); setQty(1); setUnit("units"); setLoc("Pantry");
-    onClose();
+    try {
+      setLoading(true);
+      setError(null);
+
+      await api.createItem({
+        name: formData.name,
+        category: formData.category,
+        quantity: formData.quantity,
+        unit: formData.unit,
+        expiration_date: formData.expiration_date || undefined,
+        barcode: formData.barcode || undefined,
+      });
+
+      onItemAdded(); // Recargar lista
+      onClose(); // Cerrar modal
+    } catch (err) {
+      setError("Error al crear el item");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md sp-card sp-card-lg p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-extrabold">Add item</h3>
-          <button className="btn-icon" onClick={onClose} aria-label="Close">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Agregar Item</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            ✕
           </button>
         </div>
 
-        <form onSubmit={submit} className="space-y-3">
+        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm">Name</label>
+            <label className="block text-sm font-medium mb-1">Nombre *</label>
             <input
-              ref={first}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="input mt-1"
-              placeholder="e.g. Tomatoes"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+              placeholder="Ej: Leche"
+              required
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Categoría</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+            >
+              {categories.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm">Qty</label>
+              <label className="block text-sm font-medium mb-1">Cantidad *</label>
               <input
                 type="number"
-                min={1}
-                value={qty}
-                onChange={(e) => setQty(parseInt(e.target.value || "1"))}
-                className="input mt-1"
+                min="0.1"
+                step="0.1"
+                value={formData.quantity}
+                onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
+                className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
+
             <div>
-              <label className="text-sm">Unit</label>
-              <select
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="select mt-1"
-              >
-                {UNITS.map((u) => (
-                  <option key={u}>{u}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm">Location</label>
-              <select
-                value={loc}
-                onChange={(e) => setLoc(e.target.value as Location)}
-                className="select mt-1"
-              >
-                {LOCS.map((l) => (
-                  <option key={l}>{l}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium mb-1">Unidad</label>
+              <input
+                type="text"
+                value={formData.unit}
+                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                placeholder="kg, litros, unidades"
+              />
             </div>
           </div>
 
-          <button type="submit" className="sp-btn sp-btn-primary w-full mt-2">
-            <PlusCircle className="w-4 h-4" /> Add
-          </button>
+          <div>
+            <label className="block text-sm font-medium mb-1">Fecha de expiración</label>
+            <input
+              type="date"
+              value={formData.expiration_date}
+              onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Código de barras</label>
+            <input
+              type="text"
+              value={formData.barcode}
+              onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+              placeholder="Opcional"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border rounded hover:bg-gray-50"
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? "Guardando..." : "Agregar"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
