@@ -1,4 +1,6 @@
+// src/App.tsx
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom"; // Por qué: toasts fuera del flujo → sin solapes
 import AppShell from "./ui/AppShell";
 import InventoryView from "./features/inventory/InventoryView";
 import RecipesView from "./features/recipes/RecipesView";
@@ -7,6 +9,7 @@ import ShoppingView from "./features/shopping/ShoppingView";
 import { useStore } from "./state/store";
 
 type Theme = "light" | "dark" | "system";
+type Tabs = "inventory" | "recipes" | "shopping" | "analytics" | "settings";
 type StoreShape = {
   theme?: Theme;
   setTheme?: (t: Theme) => void;
@@ -14,21 +17,55 @@ type StoreShape = {
 };
 
 function useToasts() {
-  const [toasts, setToasts] = useState<{ id: number; msg: string }[]>([]);
-  const add = (msg: string) => {
+  const [toasts, setToasts] = useState<Array<{ id: number; msg: string }>>([]);
+
+  function add(msg: string) {
     const id = Date.now();
     setToasts((t) => [...t, { id, msg }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200);
-  };
-  const View = () => (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 space-y-2">
-      {toasts.map((t) => (
-        <div key={t.id} className="px-4 py-2 rounded-xl surface border-subtle text-sm shadow-elev">
-          {t.msg}
-        </div>
-      ))}
-    </div>
-  );
+    // Por qué: autocierre corto, no invade la interacción
+    window.setTimeout(() => {
+      setToasts((t) => t.filter((x) => x.id !== id));
+    }, 2200);
+  }
+
+  function View() {
+    // Por qué: portal evita solapar tabs/overlays; pointer-events none evita bloquear clicks
+    return createPortal(
+      <div
+        role="status"
+        aria-live="polite"
+        style={{
+          position: "fixed",
+          insetInline: 0,
+          bottom: `calc(env(safe-area-inset-bottom) + var(--bottom-nav-h, 64px) + 8px)`,
+          display: "grid",
+          justifyItems: "center",
+          gap: "8px",
+          zIndex: 30, // usa var(--z-toast) si la tienes
+          pointerEvents: "none",
+          paddingInline: 12,
+        }}
+      >
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className="surface border-subtle shadow-elev"
+            style={{
+              borderRadius: 14,
+              padding: "8px 12px",
+              fontSize: "0.9rem",
+              maxWidth: "min(520px, 92vw)",
+              pointerEvents: "auto",
+            }}
+          >
+            {t.msg}
+          </div>
+        ))}
+      </div>,
+      document.body,
+    );
+  }
+
   return { add, View };
 }
 
@@ -36,22 +73,16 @@ export default function App() {
   const toast = useToasts();
   const Toasts = toast.View;
 
-  const [activeTab, setActiveTab] = useState<
-    "inventory" | "recipes" | "shopping" | "analytics" | "settings"
-  >("inventory");
+  const [activeTab, setActiveTab] = useState<Tabs>("inventory");
   const [globalSearch, setGlobalSearch] = useState("");
 
   const themeFromStore: Theme = useStore((s) => (s as StoreShape).theme ?? "system");
   const setTheme = useStore((s) => (s as StoreShape).setTheme);
   const recipeOutput = useStore((s) => (s as StoreShape).recipeOutput ?? null);
 
+  // Por qué: una sola fuente de verdad del tema (evita choques con main.tsx)
   useEffect(() => {
-    const root = document.documentElement;
-    const prefersDark =
-      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (themeFromStore === "light") root.classList.add("light");
-    else if (themeFromStore === "dark") root.classList.remove("light");
-    else root.classList.toggle("light", !prefersDark);
+    (window as any).__setAppTheme?.(themeFromStore);
   }, [themeFromStore]);
 
   useEffect(() => {
@@ -80,8 +111,8 @@ export default function App() {
                 <div className="mt-2 flex items-center gap-2">
                   <button
                     onClick={() => {
-                      document.documentElement.classList.add("light");
                       setTheme?.("light");
+                      (window as any).__setAppTheme?.("light");
                       toast.add("Theme: Light");
                     }}
                     className="sp-btn sp-btn-ghost px-3 py-2"
@@ -90,8 +121,8 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      document.documentElement.classList.remove("light");
                       setTheme?.("dark");
+                      (window as any).__setAppTheme?.("dark");
                       toast.add("Theme: Dark");
                     }}
                     className="sp-btn sp-btn-ghost px-3 py-2"
@@ -100,11 +131,8 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      const prefersDark =
-                        window.matchMedia &&
-                        window.matchMedia("(prefers-color-scheme: dark)").matches;
-                      document.documentElement.classList.toggle("light", !prefersDark);
                       setTheme?.("system");
+                      (window as any).__setAppTheme?.("system");
                       toast.add("Theme: System");
                     }}
                     className="sp-btn sp-btn-ghost px-3 py-2"
