@@ -1,5 +1,16 @@
-node_modules
-dist
-.vite
+# === Carpetas que JAMÁS deben subirse ===
+node_modules/
+dist/
+build/
+.vscode/
 .DS_Store
-.env
+
+# === Venvs de Python ===
+.venv/
+.venv_win/
+__pycache__/
+
+# === MCP generated ===
+MCP to GPT/.venv/
+MCP to GPT/.venv_win/
+

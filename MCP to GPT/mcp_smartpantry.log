@@ -1,0 +1,134 @@
+2025-11-28 13:59:42,947 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 13:59:42,951 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 13:59:42,951 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 13:59:42,952 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 13:59:42,952 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 13:59:42,953 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 13:59:42,953 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 13:59:42,954 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 13:59:42,954 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 13:59:43,010 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=/mnt/c/Users/Daniel BolaÃ±os/OneDrive/Documentos/GitHub/APPdev
+2025-11-28 13:59:43,054 [DEBUG] Using selector: EpollSelector
+2025-11-28 14:04:08,179 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 14:04:08,182 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 14:04:08,182 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 14:04:08,197 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=C:\Users\Daniel Bolaños\OneDrive\Documentos\GitHub\APPdev
+2025-11-28 14:04:08,202 [DEBUG] Using proactor: IocpProactor
+2025-11-28 14:05:24,649 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 14:05:24,651 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 14:05:24,652 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 14:05:24,666 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=C:\Users\Daniel Bolaños\OneDrive\Documentos\GitHub\APPdev
+2025-11-28 14:05:24,670 [DEBUG] Using proactor: IocpProactor
+2025-11-28 14:05:24,686 [DEBUG] Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-11-28 14:05:24,689 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000001528D5A8A50>
+2025-11-28 14:05:24,690 [INFO] Processing request of type ListResourcesRequest
+2025-11-28 14:05:24,690 [DEBUG] Dispatching request of type ListResourcesRequest
+2025-11-28 14:05:24,690 [DEBUG] Listing resources
+2025-11-28 14:05:24,690 [DEBUG] Response sent
+2025-11-28 14:05:24,692 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000001528D5A9450>
+2025-11-28 14:05:24,692 [INFO] Processing request of type ListResourceTemplatesRequest
+2025-11-28 14:05:24,692 [DEBUG] Dispatching request of type ListResourceTemplatesRequest
+2025-11-28 14:05:24,692 [DEBUG] Listing templates
+2025-11-28 14:05:24,692 [DEBUG] Response sent
+2025-11-28 14:05:24,693 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000001528D4C3360>
+2025-11-28 14:05:24,693 [INFO] Processing request of type ListToolsRequest
+2025-11-28 14:05:24,693 [DEBUG] Dispatching request of type ListToolsRequest
+2025-11-28 14:05:24,693 [DEBUG] Response sent
+2025-11-28 14:05:24,706 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000001528D4C2060>
+2025-11-28 14:05:24,706 [INFO] Processing request of type ListPromptsRequest
+2025-11-28 14:05:24,706 [DEBUG] Dispatching request of type ListPromptsRequest
+2025-11-28 14:05:24,706 [DEBUG] Response sent
+2025-11-28 14:31:47,432 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 14:31:47,437 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 14:31:47,437 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 14:31:47,437 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 14:31:47,438 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 14:31:47,438 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 14:31:47,439 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 14:31:47,439 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 14:31:47,440 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 14:31:47,492 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=/mnt/c/Users/Daniel BolaÃ±os/OneDrive/Documents/GitHub/APPdev
+2025-11-28 14:31:47,537 [DEBUG] Using selector: EpollSelector
+2025-11-28 14:40:42,082 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 14:40:42,084 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 14:40:42,084 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 14:40:42,085 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 14:40:42,085 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 14:40:42,085 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 14:40:42,085 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 14:40:42,085 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 14:40:42,085 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 14:40:42,103 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=C:\Users\Daniel Bolaños\OneDrive\Documentos\GitHub\APPdev
+2025-11-28 14:40:42,108 [DEBUG] Using proactor: IocpProactor
+2025-11-28 14:40:42,118 [DEBUG] Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-11-28 14:40:42,125 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x0000029B774E8A50>
+2025-11-28 14:40:42,125 [INFO] Processing request of type ListResourcesRequest
+2025-11-28 14:40:42,126 [DEBUG] Dispatching request of type ListResourcesRequest
+2025-11-28 14:40:42,126 [DEBUG] Listing resources
+2025-11-28 14:40:42,126 [DEBUG] Response sent
+2025-11-28 14:40:42,128 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x0000029B774E9450>
+2025-11-28 14:40:42,128 [INFO] Processing request of type ListResourceTemplatesRequest
+2025-11-28 14:40:42,128 [DEBUG] Dispatching request of type ListResourceTemplatesRequest
+2025-11-28 14:40:42,128 [DEBUG] Listing templates
+2025-11-28 14:40:42,128 [DEBUG] Response sent
+2025-11-28 14:40:42,130 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x0000029B77403360>
+2025-11-28 14:40:42,131 [INFO] Processing request of type ListToolsRequest
+2025-11-28 14:40:42,131 [DEBUG] Dispatching request of type ListToolsRequest
+2025-11-28 14:40:42,131 [DEBUG] Response sent
+2025-11-28 14:40:42,143 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x0000029B77402060>
+2025-11-28 14:40:42,143 [INFO] Processing request of type ListPromptsRequest
+2025-11-28 14:40:42,143 [DEBUG] Dispatching request of type ListPromptsRequest
+2025-11-28 14:40:42,143 [DEBUG] Response sent
+2025-11-28 14:40:57,324 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 14:40:57,326 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 14:40:57,326 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 14:40:57,326 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 14:40:57,327 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 14:40:57,327 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 14:40:57,327 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 14:40:57,327 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 14:40:57,327 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 14:40:57,350 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=C:\Users\Daniel Bolaños\OneDrive\Documentos\GitHub\APPdev
+2025-11-28 14:40:57,355 [DEBUG] Using proactor: IocpProactor
+2025-11-28 14:54:35,956 [INFO] === Arrancando SmartPantry MCP ===
+2025-11-28 14:54:35,958 [DEBUG] Initializing server 'smartpantry-helper'
+2025-11-28 14:54:35,958 [DEBUG] Registering handler for ListToolsRequest
+2025-11-28 14:54:35,958 [DEBUG] Registering handler for CallToolRequest
+2025-11-28 14:54:35,958 [DEBUG] Registering handler for ListResourcesRequest
+2025-11-28 14:54:35,959 [DEBUG] Registering handler for ReadResourceRequest
+2025-11-28 14:54:35,959 [DEBUG] Registering handler for PromptListRequest
+2025-11-28 14:54:35,959 [DEBUG] Registering handler for GetPromptRequest
+2025-11-28 14:54:35,959 [DEBUG] Registering handler for ListResourceTemplatesRequest
+2025-11-28 14:54:35,976 [INFO] Iniciando FastMCP server (stdio). PROJECT_ROOT=C:\Users\Daniel Bolaños\OneDrive\Documentos\GitHub\APPdev
+2025-11-28 14:54:35,982 [DEBUG] Using proactor: IocpProactor
+2025-11-28 14:54:35,990 [DEBUG] Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-11-28 14:54:35,995 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000002CCE8A58A50>
+2025-11-28 14:54:35,995 [INFO] Processing request of type ListResourcesRequest
+2025-11-28 14:54:35,995 [DEBUG] Dispatching request of type ListResourcesRequest
+2025-11-28 14:54:35,995 [DEBUG] Listing resources
+2025-11-28 14:54:35,996 [DEBUG] Response sent
+2025-11-28 14:54:35,997 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000002CCE8A59450>
+2025-11-28 14:54:35,997 [INFO] Processing request of type ListResourceTemplatesRequest
+2025-11-28 14:54:35,997 [DEBUG] Dispatching request of type ListResourceTemplatesRequest
+2025-11-28 14:54:35,998 [DEBUG] Listing templates
+2025-11-28 14:54:35,998 [DEBUG] Response sent
+2025-11-28 14:54:35,999 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000002CCE8973360>
+2025-11-28 14:54:35,999 [INFO] Processing request of type ListToolsRequest
+2025-11-28 14:54:35,999 [DEBUG] Dispatching request of type ListToolsRequest
+2025-11-28 14:54:36,000 [DEBUG] Response sent
+2025-11-28 14:54:36,009 [DEBUG] Received message: <mcp.shared.session.RequestResponder object at 0x000002CCE8972060>
+2025-11-28 14:54:36,010 [INFO] Processing request of type ListPromptsRequest
+2025-11-28 14:54:36,010 [DEBUG] Dispatching request of type ListPromptsRequest
+2025-11-28 14:54:36,010 [DEBUG] Response sent
