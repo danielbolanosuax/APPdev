@@ -1,0 +1,12 @@
+name: SmartPantry MCP
+version: 0.0.1
+schema: v1
+
+mcpServers:
+  - name: smartpantry-helper
+    command: "C:\\Users\\Daniel Bolaños\\OneDrive\\Documentos\\GitHub\\APPdev\\MCP to GPT\\.venv_win\\Scripts\\python.exe"
+    args:
+      - "C:\\Users\\Daniel Bolaños\\OneDrive\\Documentos\\GitHub\\APPdev\\MCP to GPT\\mcp_smartpantry.py"
+    env:
+      PROJECT_ROOT: "C:\\Users\\Daniel Bolaños\\OneDrive\\Documentos\\GitHub\\APPdev"
+
