@@ -1,0 +1,96 @@
+id;path;ext;size_bytes;md5
+1;./MCP to GPT/.venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md;md;1518;1c1f23b073da202e1f4f9e426490210c
+2;./MCP to GPT/.venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md;md;1508;c624803bdf6fc1c4ce39f5ae11d7bd05
+3;./MCP to GPT/.venv/lib/python3.12/site-packages/idna-3.11.dist-info/licenses/LICENSE.md;md;1541;18a4795c19833413a7e2f1cb3cd3b143
+4;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema/benchmarks/issue232/issue.json;json;117105;a50833e54aa514325530e96ac0ea499f
+5;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/metaschema.json;json;1785;235e1fd47201b751194d9e8e90969ce4
+6;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/metaschema.json;json;2452;e32920982620b2b43803dc82d4640b50
+7;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft3/metaschema.json;json;2600;4b0afa89e7c7873a44045691cc22f1f9
+8;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft4/metaschema.json;json;4357;c6be0c4792c7455a526f0e0cc9eb7d25
+9;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft6/metaschema.json;json;4437;f46ac1267d2110f8f9e22b419be0b421
+10;./MCP to GPT/.venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft7/metaschema.json;json;4819;bacf2806af4fea75ccd6abe8c8444722
+11;./MCP to GPT/.venv/lib/python3.12/site-packages/pip-25.3.dist-info/licenses/src/pip/_vendor/idna/LICENSE.md;md;1541;204c0612e40a4dd46012a78d02c80fb1
+12;./MCP to GPT/.venv/lib/python3.12/site-packages/pip/_vendor/idna/LICENSE.md;md;1541;204c0612e40a4dd46012a78d02c80fb1
+13;./MCP to GPT/.venv/lib/python3.12/site-packages/starlette-0.50.0.dist-info/licenses/LICENSE.md;md;1518;11e8c8dbfd5fa373c703de492140ff7a
+14;./MCP to GPT/.venv/lib/python3.12/site-packages/uvicorn-0.38.0.dist-info/licenses/LICENSE.md;md;1526;5c778842f66a649636561c423c0eec2e
+15;./MCP to GPT/.venv_win/Lib/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md;md;1518;1c1f23b073da202e1f4f9e426490210c
+16;./MCP to GPT/.venv_win/Lib/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md;md;1508;c624803bdf6fc1c4ce39f5ae11d7bd05
+17;./MCP to GPT/.venv_win/Lib/site-packages/idna-3.11.dist-info/licenses/LICENSE.md;md;1541;18a4795c19833413a7e2f1cb3cd3b143
+18;./MCP to GPT/.venv_win/Lib/site-packages/isapi/doc/isapi.html;html;4239;b6d027ec392ee55bae2ec0b77263581c
+19;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema/benchmarks/issue232/issue.json;json;117105;a50833e54aa514325530e96ac0ea499f
+20;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema_specifications/schemas/draft201909/metaschema.json;json;1785;235e1fd47201b751194d9e8e90969ce4
+21;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema_specifications/schemas/draft202012/metaschema.json;json;2452;e32920982620b2b43803dc82d4640b50
+22;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema_specifications/schemas/draft3/metaschema.json;json;2600;4b0afa89e7c7873a44045691cc22f1f9
+23;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema_specifications/schemas/draft4/metaschema.json;json;4357;c6be0c4792c7455a526f0e0cc9eb7d25
+24;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema_specifications/schemas/draft6/metaschema.json;json;4437;f46ac1267d2110f8f9e22b419be0b421
+25;./MCP to GPT/.venv_win/Lib/site-packages/jsonschema_specifications/schemas/draft7/metaschema.json;json;4819;bacf2806af4fea75ccd6abe8c8444722
+26;./MCP to GPT/.venv_win/Lib/site-packages/pip-25.2.dist-info/licenses/src/pip/_vendor/idna/LICENSE.md;md;1541;204c0612e40a4dd46012a78d02c80fb1
+27;./MCP to GPT/.venv_win/Lib/site-packages/starlette-0.50.0.dist-info/licenses/LICENSE.md;md;1518;11e8c8dbfd5fa373c703de492140ff7a
+28;./MCP to GPT/.venv_win/Lib/site-packages/uvicorn-0.38.0.dist-info/licenses/LICENSE.md;md;1526;5c778842f66a649636561c423c0eec2e
+29;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/COM_Records.html;html;30907;9e7b92e88e2dfd9433c0c5210d7f972e
+30;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/GeneratedSupport.html;html;6122;9992c4640fc41621df71eafa1fb41f69
+31;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/PythonCOM.html;html;9027;dbb123ddf3b86f5de9d8b62ebb4d3f72
+32;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/QuickStartClientCom.html;html;7354;1118dace3e3c2d98467a66b1eb54af28
+33;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/QuickStartServerCom.html;html;13241;19048f4ccf951c32db549dc9dc1a1d6f
+34;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/docindex.html;html;1369;9df2201bb09d9ba944e0fa42411f0dbe
+35;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/index.html;html;1654;4eab9f93dc553e022afca93f16e3bd68
+36;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/misc.html;html;1176;56531bb946f00db34d5d167a3629df58
+37;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/package.html;html;3288;33b4e37a95a9863a0bfb41285425925e
+38;./MCP to GPT/.venv_win/Lib/site-packages/win32com/HTML/variant.html;html;6016;e985e0c41f23d2e7738a35d358392fc6
+39;./MCP to GPT/.venv_win/Lib/site-packages/win32com/readme.html;html;3766;3593c3d80936e276fd22da6509210893
+40;./MCP to GPT/.venv_win/Lib/site-packages/win32com/test/testPyScriptlet.js;js;1120;44d307fd3ffd36f532f7a2c67c1baeee
+41;./MCP to GPT/.venv_win/Lib/site-packages/win32com/test/testxslt.js;js;581;f2d6248ceff8e197b7eb62a9de2ab52b
+42;./MCP to GPT/.venv_win/Lib/site-packages/win32comext/axscript/Demos/client/asp/interrupt/test.html;html;166;a85f302d7225e87bfc0501d647b602e6
+43;./MCP to GPT/.venv_win/Lib/site-packages/win32comext/axscript/Demos/client/asp/interrupt/test1.html;html;166;c49289cb43ca090301b7acf5f100f569
+44;./README.md;md;2555;cac141da861c855e069a9c32557458ac
+45;./eslint.config.js;js;912;3d103ddffe795efa4b885f4dd67527a2
+46;./index.html;html;2569;14befc9933b44a783b0793a26cc92ec2
+47;./package-lock.json;json;381289;40008234620e3b8fbef68b3ef8951a0f
+48;./package.json;json;2031;f4173c9ecec8abc438a63ec8a3914759
+49;./playwright.config.ts;ts;5981;e837aeeb589b00b2ff28ea8d20c8bb71
+50;./postcss.config.js;js;117;6b78d877596be30b9e337891cf3139b9
+51;./smartpantry-api/backend/src/services/api.ts;ts;924;305afbf497cbce21c34f3046dcee314b
+52;./smartpantry-api/backend/venv/Lib/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md;md;1518;1c1f23b073da202e1f4f9e426490210c
+53;./smartpantry-api/backend/venv/Lib/site-packages/httpx-0.26.0.dist-info/licenses/LICENSE.md;md;1508;c624803bdf6fc1c4ce39f5ae11d7bd05
+54;./smartpantry-api/backend/venv/Lib/site-packages/idna-3.11.dist-info/licenses/LICENSE.md;md;1541;18a4795c19833413a7e2f1cb3cd3b143
+55;./smartpantry-api/backend/venv/Lib/site-packages/pip-25.3.dist-info/licenses/src/pip/_vendor/idna/LICENSE.md;md;1541;204c0612e40a4dd46012a78d02c80fb1
+56;./smartpantry-api/backend/venv/Lib/site-packages/pip/_vendor/idna/LICENSE.md;md;1541;204c0612e40a4dd46012a78d02c80fb1
+57;./smartpantry-api/backend/venv/Lib/site-packages/starlette-0.35.1.dist-info/licenses/LICENSE.md;md;1518;11e8c8dbfd5fa373c703de492140ff7a
+58;./smartpantry-api/backend/venv/Lib/site-packages/uvicorn-0.27.0.dist-info/licenses/LICENSE.md;md;1526;5c778842f66a649636561c423c0eec2e
+59;./smartpantry-api/package-lock.json;json;53446;e8588991e84da361dc847c478c26234c
+60;./smartpantry-api/package.json;json;528;8d9caac116a0bb1445c419d54714cd53
+61;./smartpantry-api/src/index.ts;ts;1946;87bd929d589ef3b8b61eff28a2b1c17d
+62;./smartpantry-api/src/llm/llmClient.ts;ts;3335;1928d35661596e5cf14906e103b083ee
+63;./smartpantry-api/src/recipes/match.ts;ts;1335;db11d964a7d05c1a6b6d0a397b135bee
+64;./smartpantry-api/src/recipes/recipes.db.ts;ts;1367;132a80aead9351acb2127ee7ddc3ea37
+65;./smartpantry-api/src/recipes/validate.ts;ts;732;20608420a7daef8a9accdf319ef3f4fb
+66;./smartpantry-api/src/scanner/offClient.ts;ts;863;ba1232153743fc3a201fcdb71318905f
+67;./smartpantry-api/src/scanner/score.ts;ts;2646;ad2cceb8375332d3796cc87d119c5d13
+68;./smartpantry-api/src/types.ts;ts;745;8e4d3628286773f5c89b80a162998c4e
+69;./smartpantry-api/src/utils.ts;ts;381;bfee1ebfb27924d2b98a93060e557898
+70;./smartpantry-api/tsconfig.json;json;293;5e8c4b2403d8d278e5041c05999deaf4
+71;./src/App.tsx;tsx;6173;b85f72ee806cfd0815f47ecac68f7524
+72;./src/components/ToastProvider.tsx;tsx;571;3802bd14350b5edead10a714e827e774
+73;./src/contexts/AuthContext.tsx;tsx;3011;b97627d2987a146c6311f850fe60711b
+74;./src/features/analytics/AnalyticsView.tsx;tsx;18031;f72655371dad499aa93fe61b0071c3f5
+75;./src/features/auth/LoginView.tsx;tsx;3139;7d70a0debf7d2a1f51d1a3fc0f5f5f79
+76;./src/features/auth/RegisterView.tsx;tsx;4825;bca65af064072a63379d7fe4ab9c83ae
+77;./src/features/inventory/AddItemModal.tsx;tsx;5772;e8b715185460949e77f52dc27ad12422
+78;./src/features/inventory/InventoryView.tsx;tsx;9253;aeffa3e2e61d16f6806b8e0b25ec62b1
+79;./src/features/inventory/QuantityStepper.tsx;tsx;1106;7dcbbd25422913c39426fee7ac385aa0
+80;./src/features/inventory/components/BarcodeScanner.tsx;tsx;1572;94b094f04392775eeec944b5e859bdf2
+81;./src/features/recipes/RecipeCard.tsx;tsx;5180;fa21fc1338ba8e0ef64d45addf9c6996
+82;./src/features/recipes/RecipesView.tsx;tsx;3142;77d2aba0906d2d4dc86b29b8a7dc62e9
+83;./src/features/shopping/ShoppingView.tsx;tsx;13169;e782755401206ae63c899e5b48e9fafc
+84;./src/main.tsx;tsx;524;0615405a1674874e6a79670c2d648c17
+85;./src/services/api.ts;ts;3101;3c4fab8cd7139abd8c772ec299bdeab5
+86;./src/state/store.ts;ts;13090;001bc8157e9729db8e7ae6dc8d749cc3
+87;./src/store/useStore.ts;ts;3440;9ac91f345facf80d689a06116b064b6d
+88;./src/styles.css;css;18960;d0a92831f1353428cbe3296e48638c0b
+89;./src/ui/AppShell.tsx;tsx;6868;71712e99eba9a7d141e14a5f7cf02879
+90;./src/ui/kit.tsx;tsx;5123;8c03014bc2f1c53161e371e3b8431b77
+91;./tailwind.config.js;js;487;700ae00924f18d6b073b5d7ac3a194bd
+92;./tsconfig.app.json;json;732;06fed9d2d293837c0571529eaae7204a
+93;./tsconfig.json;json;378;15bbc21879b554353456705cb1caa656
+94;./tsconfig.node.json;json;653;eec85c9d7c6b599801557f1afd86672c
+95;./vite.config.ts;ts;1563;42b133013d281aebbe3a58a6785148ee

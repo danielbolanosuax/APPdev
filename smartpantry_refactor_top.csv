@@ -1,0 +1,10 @@
+path;loc;area;prioridad;plan
+./src/state/store.ts;431;frontend;;
+./src/features/analytics/AnalyticsView.tsx;483;frontend;;
+./src/features/shopping/ShoppingView.tsx;391;frontend;;
+./src/features/inventory/InventoryView.tsx;281;frontend;;
+./src/ui/AppShell.tsx;211;frontend;;
+./src/features/inventory/AddItemModal.tsx;172;frontend;;
+./src/App.tsx;171;frontend;;
+./src/ui/kit.tsx;188;frontend;;
+./src/styles.css;584;frontend;;
